@@ -285,3 +285,7 @@ module.exports = {
 ```
 
 通过加入上面的那个rule，我们就可以让 .srl.md 文件导出我们需要的内容。
+
+## License
+
+AGPL
