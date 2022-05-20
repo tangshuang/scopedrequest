@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<style>
+  label, .label {
+    display: flex;
+  }
+  label span,
+  .label span {
+    display: block;
+    width: 90px;
+  }
+  .item {
+    margin-bottom: 20px;
+  }
+  textarea {
+    width: 500px;
+    height: 90px;
+  }
+  [name=srl] {
+    height: 160px;
+  }
+  button {
+    padding: 8px 40px;
+  }
+</style>
+
+<div>
+  <form id="playground-form">
+    <div class="item">
+      <label>
+        <span>SRL：</span>
+        <textarea name="srl">GET "https://api.github.com/search/repositories?q=js" -> {
+  items: [
+    {
+      id: string
+      full_name; description,
+      url~html_url
+    }
+  ]
+}</textarea>
+      </label>
+    </div>
+    <div class="item">
+      <label>
+        <span>发送数据:</span>
+        <textarea name="postData" placeholder="POST,PUT时用，必须是JSON"></textarea>
+      </label>
+    </div>
+    <div class="item label">
+      <span>&nbsp;</span>
+      <button>提交</button>
+    </div>
+  </form>
+
+  <div id="output"><pre></pre></div>
+</div>
+
+<script type="module">
+  import { ScopedRequest } from '../es/index.js'
+
+  document.querySelector('form').addEventListener('submit', (e) => {
+    e.preventDefault()
+
+    const form = e.target
+    const formData = new FormData(form)
+
+    const postDataText = document.querySelector('[name=postData]').value
+    const postData = postDataText ? JSON.parse(postDataText) : null
+
+    const output = document.querySelector('#output pre')
+
+    output.innerText = '正在请求...'
+    ScopedRequest.run(document.querySelector('[name=srl]').value, null, postData).then((data) => {
+      output.innerText = JSON.stringify(data, null, 4)
+    }).catch((e) => {
+      console.error(e)
+      alert(e.message)
+    })
+  })
+</script>

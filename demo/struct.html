@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<script type="module">
+import { tokenize, parse } from '../es/compiler.js'
+const tokens = tokenize(`
+  FRAGMENT fragment1: {
+    name
+    age: AVG(A.items.concat(B.items), "xxx")
+  }
+
+  // 1. headers
+  GET "https://api.github.com/search/repositories?q={keyword}" -H "content-type: application/json" -> {
+    id
+    // 可选
+    total_count?
+    // 类型
+    count: number
+    // 使用fragment
+    person: &fragment1
+    // 嵌套
+    items: [
+      // 可选的类型
+      {
+        // 分号结尾
+        full_name;
+        // 单行对象
+        owner: { login };
+        html_url
+      };
+    ];
+    color: <"red", number>;
+  } as dog
+
+  AWAIT dog others
+
+  PUT "http://xxx/{dog.id}" + {
+    name: string
+    age
+  } -> {
+    name~title?!
+    age
+    date: date("YY-MM-DD", 13); time
+  } as see
+
+  COMPOSE -> {
+    a: (dog.total_count),
+    b: (person),
+    c: (see),
+  }
+`)
+console.log(tokens)
+console.log(parse(tokens))
+</script>

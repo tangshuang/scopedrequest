@@ -1,0 +1,26 @@
+{
+  "name": "scopedrequest",
+  "version": "0.1.4",
+  "description": "",
+  "main": "index.js",
+  "module": "es/index.js",
+  "source": "es/index.js",
+  "scripts": {
+    "dev": "parcel --no-cache --no-hmr demo/index.html",
+    "build": "parcel build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/frustigor/scopedrequest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "AGPL",
+  "devDependencies": {
+    "parcel": "^2.0.1",
+    "scopex": "^4.3.3"
+  },
+  "targets": {
+    "module": false
+  }
+}
