@@ -31,7 +31,7 @@ const data = await ScopedRequest.run(`
 
 运行查询，返回一个查询结果的promise。
 
-- code: 基于查询语言的代码
+- code: 基于SRL的代码
 - params: 参数，在代码中，你可以使用 `{}` 作为插值，通过 params 传入运行时的真实值，仅在 url 和 headers 中生效
 - dataList: 请求体，当发起 POST 或 PUT 请求时需要传入，由于我们在组合语法中并不知道内部会有几个请求需要发送数据，因此，我们必须传入一个数组与需要的请求进行位置上的对应
 - context: 自定义透传信息
@@ -64,20 +64,11 @@ ScopedRequest.run(`
 ```
 
 上面这一句演示了发送请求体时，仅发送真实数据对象中的少数几个属性。
+这里由于只有一个请求体，因此我们可以不传数组，直接传请求发送的数据。
 
 ### ScopedRequest.mock(code:string)
 
 对一个查询语言进行mock，获得其结果。此处无需传入params, data等信息，你可以直接将`run`替换为`mock`，从而得到mock结果。
-
-## 查询语言
-
-ScopedRequest发明了一套简单的查询语言，通过这套查询语言，你可以便捷的用查询语言进行接口数据的裁剪。
-
-```
-命令 命令参数 标记参数 + {请求结构体} -> {响应结构体} as 别名
-```
-
-你可以[在这篇文章读到关于ScopedRequestLanguage的全部内容](https://www.tangshuang.net/8445.html)。
 
 ## 自定义
 
@@ -97,6 +88,8 @@ const request = new ScopedRequest({
   },
   // 调试器，接收一个含有相关信息的对象
   debug(e) {},
+
+
   // 是否载入ScopeX来进行表达式增强，如果不载入，则只能解析路径，不能执行运算和函数调用
   scopex: null,
   // 向内提供函数，建议函数名全部大写，例如 AVG() SUM()，仅传入scopex之后有效，不传入时，调用函数会报错
@@ -209,12 +202,14 @@ query.run(`
 
   compose -> {
     total: (A.total + B.total); // 使用表达式
-    avg: AVG(A.items.concat(B.items)); // 使用函数
+    avg: (AVG(A.items.concat(B.items))); // 使用上面定义的函数 AVG()
   }
 `)
 ```
 
 函数使用 `fns` 传入，推荐使用全大写命名。
+
+注意：由于此处调用的函数实际上是表达式的一部分，因此，上面代码中，avg的内容必须放在一个 `()` 内部，虽然它只执行了函数。
 
 注意：你需要另外安装 scopex，你需要根据你的实际情况来选择是否使用 scopex，避免造成不必要的问题。
 

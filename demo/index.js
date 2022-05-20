@@ -168,6 +168,35 @@ async function fragment() {
   console.log('fragment:', data)
 }
 
+async function fns() {
+  const request = new ScopedRequest({
+    fns: {
+      COUNT(items) {
+        return items.length
+      },
+    },
+    scopex: ScopeX,
+  })
+
+  const data = await request.run(`
+    GET "https://api.github.com/search/repositories?q=reactjs" -> {
+      items: [
+        {
+          id: string
+          full_name
+          description
+          html_url
+        }
+      ],
+    } as Data
+
+    COMPOSE -> {
+      count: (COUNT(Data.items))
+    }
+  `)
+  console.log('fns:', data)
+}
+
 window.basic = basic;
 window.post = post;
 window.httpHeaders = headers;
@@ -176,3 +205,4 @@ window.wait = wait;
 window.formatters = formatters
 window.decorate = decorate;
 window.fragment = fragment;
+window.fns = fns;
