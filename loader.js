@@ -1,7 +1,9 @@
-const compile = require('./compile')
+const { parseSRLFileContent } = require('./compile')
 
 module.exports = function(content) {
-  const mapping = compile(content)
+  // const file = this.resourcePath
+  // const options = this.getOptions()
+  const mapping = parseSRLFileContent(content)
   const codes = []
   Object.keys(mapping).forEach((name) => {
     const code = mapping[name]

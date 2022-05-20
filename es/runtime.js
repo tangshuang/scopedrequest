@@ -1,4 +1,4 @@
-import { tokenize, parse, TYPES } from './compiler.js'
+import { tokenize, parse, TYPES, interpret } from './compiler.js'
 
 const defaultMockers = {
   string: () => () => {
@@ -68,45 +68,13 @@ const defaultFormatters = {
   },
 }
 
-const caches = []
-
-function compile(code) {
-  const length = code.length
-  const summaryLen = 60
-
-  let cache = null
-  const filterByLen = caches.filter(item => item.length === length)
-  if (filterByLen.length > 1) {
-    const summary = code.substring(0, summaryLen)
-    const filterBySummary = filterByLen.filter(item => item.summary === summary)
-    if (filterBySummary.length > 1) {
-      const hash = getStringHash(code)
-      const findByHash = filterBySummary.find(item => item.hash === hash)
-      if (findByHash) {
-        cache = findByHash
-      }
-    }
-  }
-
-  if (!cache) {
-    const summary = code.substring(0, summaryLen)
-    const hash = getStringHash(code)
-    const tokens = tokenize(code)
-    const ast = parse(tokens, code)
-    caches.push({ hash, summary, ast, length })
-    return ast
-  }
-
-  return cache.ast
-}
-
 export class ScopedRequest {
   constructor(options = {}) {
     this.options = options
   }
 
   compile(code) {
-    const ast = compile(code.trim())
+    const ast = interpret(code)
 
     const commands = ast.body
 
@@ -831,7 +799,7 @@ export class ScopedRequest {
   async mock(code) {
     await sleep()
 
-    const { fragments, groups } = this.compile(code)
+    const { fragments, groups } = interpret(code)
     const { mockers = {}, debug } = this.options
 
     const results = {}

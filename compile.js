@@ -1,6 +1,6 @@
-module.exports = function(content) {
-  // const file = this.resourcePath
-  // const options = this.getOptions()
+const { interpret } = require('./index')
+
+function parseSRLFileContent(content) {
   const lines = content.split('\n')
   const usable = []
   let item = null
@@ -45,4 +45,18 @@ module.exports = function(content) {
     mapping[name] = codes
   })
   return mapping
+}
+
+function transferToTypescirpt(name, code, options) {
+  const { groups, fragments } = interpret(code)
+  const types = []
+
+  // TODO
+
+  return types
+}
+
+module.exports = {
+  parseSRLFileContent,
+  transferToTypescirpt,
 }

@@ -421,3 +421,68 @@ function parseValue(str) {
 
   return [operators, content]
 }
+
+const caches = []
+export function interpret(code) {
+  const parseCode = (code) => {
+    const length = code.length
+    const summaryLen = 60
+
+    let cache = null
+    const filterByLen = caches.filter(item => item.length === length)
+    if (filterByLen.length > 1) {
+      const summary = code.substring(0, summaryLen) + code.substring(summaryLen * 2, summaryLen)
+      const filterBySummary = filterByLen.filter(item => item.summary === summary)
+      if (filterBySummary.length > 1) {
+        const hash = getStringHash(code)
+        const findByHash = filterBySummary.find(item => item.hash === hash)
+        if (findByHash) {
+          cache = findByHash
+        }
+      }
+    }
+
+    if (!cache) {
+      const summary = code.substring(0, summaryLen) + code.substring(summaryLen * 2, summaryLen)
+      const hash = getStringHash(code)
+      const tokens = tokenize(code)
+      const ast = parse(tokens, code)
+      caches.push({ hash, summary, ast, length })
+      return ast
+    }
+
+    return cache.ast
+  }
+
+  const ast = parseCode(code.trim())
+
+  const commands = ast.body
+
+  const fragments = {}
+  const groups = [[]]
+  let groupIndex = 0
+
+  commands.forEach((item) => {
+    if (item.type !== TYPES.COMMAND) {
+      return
+    }
+
+    if (isMatch(item.command, 'fragment')) {
+      fragments[item.args[0]] = item.body
+    }
+    else if (isMatch(item.command, 'await')) {
+      groups[groupIndex].push(item)
+      groupIndex ++
+      groups[groupIndex] = []
+    }
+    else if (isMatch(item.command, 'compose')) {
+      groupIndex ++
+      groups[groupIndex] = [item]
+    }
+    else {
+      groups[groupIndex].push(item)
+    }
+  })
+
+  return { groups, fragments, commands, ast }
+}
