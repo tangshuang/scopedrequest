@@ -12,7 +12,7 @@ module.exports = function(content, tsdFile) {
     const code = mapping[name]
     const [params, input, output] = transferToTypescirpt(code)
 
-    codes.push(`export type ${name} = string`)
+    codes.push(`export declare const ${name}: string`)
     if (params) {
       codes.push(`export type ${name}Params = ${params}`)
     }
