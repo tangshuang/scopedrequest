@@ -834,7 +834,7 @@ export class ScopedRequest {
 
           // 没有给值
           if (!valueInfo) {
-            output[key] = allMockers.string()
+            output[key] = allMockers.string()()
           }
           else if (Array.isArray(valueInfo)) {
             const [operators, tag, exps = []] = valueInfo
