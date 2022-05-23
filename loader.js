@@ -5,7 +5,7 @@ module.exports = function(content) {
   const options = this.getOptions()
   const file = this.resourcePath
   if (file && options && options.ts) {
-    transfer(content, file + '.ts')
+    transfer(content, file + '.d.ts')
   }
 
   const mapping = parseSRLContent(content)
