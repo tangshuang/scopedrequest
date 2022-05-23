@@ -819,7 +819,7 @@ export class ScopedRequest {
       if (structure.type === TYPES.OBJECT) {
         const output = {}
         structure.nodes.forEach((prop) => {
-          const { key: keyInfo, value: valueInfo = [] } = prop
+          const { key: keyInfo, value: valueInfo } = prop
           const [key, decorators] = keyInfo || []
 
           if (decorators?.indexOf('?') > -1 && !willExist()) {
@@ -832,7 +832,11 @@ export class ScopedRequest {
             debug,
           }
 
-          if (Array.isArray(valueInfo)) {
+          // 没有给值
+          if (!valueInfo) {
+            output[key] = allMockers.string()
+          }
+          else if (Array.isArray(valueInfo)) {
             const [operators, tag, exps = []] = valueInfo
             if (tag && operators === '&') {
               const fragment = fragments[tag]
