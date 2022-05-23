@@ -810,7 +810,7 @@ export class ScopedRequest {
       ...mockers,
     }
     const willExist = () => parseInt((Math.random() * 100 % 2) + '', 10)
-    const fn = (structure, context) => {
+    const fn = (structure, context = {}) => {
       const { keyPath = [] } = context
 
       /**
