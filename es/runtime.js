@@ -818,7 +818,7 @@ export class ScopedRequest {
        */
       if (structure.type === TYPES.OBJECT) {
         const output = {}
-        structure.props.forEach((prop) => {
+        structure.nodes.forEach((prop) => {
           const { key: keyInfo, value: valueInfo = [] } = prop
           const [key, decorators] = keyInfo || []
 
