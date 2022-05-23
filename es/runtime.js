@@ -1,4 +1,5 @@
-import { tokenize, parse, TYPES, interpret } from './compiler.js'
+import { TYPES, interpret } from './compiler.js'
+import { isMatch, sleep } from './utils.js'
 
 const defaultMockers = {
   string: () => () => {
@@ -74,7 +75,7 @@ export class ScopedRequest {
   }
 
   compile(code) {
-    const ast = interpret(code)
+    const { ast } = interpret(code)
 
     const commands = ast.body
 
@@ -155,7 +156,7 @@ export class ScopedRequest {
 
       const { headers = {} } = options
 
-      const realUrl = replaceBy(url.substring(1, url.length - 1))
+      const realUrl = replaceBy(url)
       const realHeaders = Object.keys(headers).reduce((obj, key) => {
         obj[key] = replaceBy(headers[key])
         return obj
@@ -1013,27 +1014,4 @@ export class ScopedRequest {
     const ins = new this()
     return ins.mock(code)
   }
-}
-
-function getStringHash(str) {
-  let hash = 5381
-  let i = str.length
-
-  while(i) {
-    hash = (hash * 33) ^ str.charCodeAt(--i)
-  }
-
-  return hash >>> 0
-}
-
-function isMatch(str, ...args) {
-  return args.some(arg => str.toLowerCase() === arg)
-}
-
-async function sleep(time = 16) {
-  // 使用异步来和run对齐，也不会阻塞进程
-  await new Promise((r) => {
-    // eslint-disable-next-line no-undef
-    setTimeout(r, time)
-  })
 }

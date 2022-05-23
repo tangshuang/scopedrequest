@@ -1,3 +1,5 @@
+import { isMatch, getStringHash } from './utils.js'
+
 export const TYPES  = {
   COMMAND: 'Command',
   OBJECT: 'Object',
@@ -374,7 +376,12 @@ export function parse(tokens) {
       if (!command.args) {
         command.args = []
       }
-      command.args.push(curr)
+      if (/^["'].*?["']$/.test(curr)) {
+        command.args.push(curr.substring(1, curr.length - 1))
+      }
+      else {
+        command.args.push(curr)
+      }
     }
   }
 

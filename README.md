@@ -278,6 +278,11 @@ module.exports = {
       {
         test: /\.srl\.md$/,
         loader: 'scopedrequest/loader',
+        options: {
+          // 是否生成/导出ts文件，通过该文件可用于ts代码检查
+          // 注意，由于语法上的差异，如果出现大量函数、表达式，将无法得到你想要的ts效果，仅支持较为通用的简单的类型检查
+          ts: true,
+        },
       },
     ],
   },

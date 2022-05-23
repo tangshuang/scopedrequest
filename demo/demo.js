@@ -1,4 +1,4 @@
-import { tokenize, parse } from '../src/parser'
+import { tokenize, parse, interpret } from '../es/index.js'
 
 /////////////// 语法测试 ////////////////
 const progamStr = `
@@ -46,9 +46,8 @@ const progamStr = `
     c: see,
   }
 `
-const tokens = tokenize(progamStr)
-const ast = parse(tokens, progamStr)
-console.log('ast:', JSON.stringify(ast, null, 4))
+
+console.log(interpret(progamStr))
 
 
 // /////////////// parse ////////////////

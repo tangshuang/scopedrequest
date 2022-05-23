@@ -1,6 +1,6 @@
-const { interpret } = require('./index')
+const { interpret, TYPES } = require('./index')
 
-function parseSRLFileContent(content) {
+function parseSRLContent(content) {
   const lines = content.split('\n')
   const usable = []
   let item = null
@@ -47,16 +47,132 @@ function parseSRLFileContent(content) {
   return mapping
 }
 
-function transferToTypescirpt(name, code, options) {
+function transferToTypescirpt(code) {
   const { groups, fragments } = interpret(code)
-  const types = []
 
-  // TODO
+  const dataList = []
+  const resMapping = {}
+  let output = null
 
-  return types
+  const params = {}
+  const findParams = str => str && str.replace(/\{(\w+)\}/g, (_, key) => params[key] = 1)
+
+  groups.forEach((group, gIndex) => {
+    group.forEach((item, index) => {
+      const { type, req, res, alias, args, options } = item
+      if (type !== TYPES.COMMAND) {
+        return
+      }
+
+      if (req) {
+        dataList.push(req)
+      }
+
+      if (gIndex === groups.length - 1 && index === group.length - 1) {
+        output = res
+      }
+      // 暂不支持compose组合，后面再支持
+      // else if (alias) {
+      //   resMapping[alias] = res
+      // }
+
+      args && args.forEach(findParams)
+      options && Object.values(options).forEach(findParams)
+    })
+  })
+
+  const paramsKeys = Object.keys(params)
+  let paramsText = ''
+  if (paramsKeys.length) {
+    paramsText += '{'
+    paramsKeys.forEach((key) => {
+      paramsText += key + ':string|number;'
+    })
+    paramsText += '}'
+  }
+
+  const transfer = (shape) => {
+    if (Array.isArray(shape)) {
+      let text = ''
+      const [operators, tag, exps = []] = shape
+      if (operators.indexOf('&') > -1) {
+        text += transfer(fragments[tag])
+      }
+      else if (!exps.length) {
+        text += tag
+      }
+      // 暂不支持表达式
+      else {
+        text += 'any'
+      }
+
+      text += ';'
+      return text
+    }
+
+    if (shape.type === TYPES.OBJECT) {
+      let text = '{'
+      const { nodes } = shape
+      nodes.forEach((node) => {
+        const { key: keyInfo, value } = node
+        const [key, decorators] = keyInfo
+        const keyText = decorators.indexOf('?') > -1 ? key + '?' : key
+        text += keyText + ':' + (value ? transfer(value) : 'any;')
+      })
+      text += '};'
+      return text
+    }
+
+    if (shape.type === TYPES.ARRAY) {
+      const itemTexts = []
+      const { nodes } = shape
+      nodes.forEach((node) => {
+        const { value } = node
+        const type = transfer(value)
+        itemTexts.push(type)
+      })
+      const itemText = itemTexts.join('|')
+      const text = 'Array<' + itemText + '>;'
+      return text
+    }
+
+    if (shape.type === TYPES.TUPLE) {
+      const itemTexts = []
+      const { nodes } = shape
+      nodes.forEach((node) => {
+        const { value } = node
+        const type = transfer(value)
+        itemTexts.push(type)
+      })
+      const itemText = itemTexts.join(',')
+      const text = '[' + itemText + '];'
+      return text
+    }
+
+    // 其他未知情况全部any
+    return 'any';
+  }
+
+  const dataInput = dataList.map(transfer)
+  const inputType = dataInput.length ? `[${dataInput.join(',')}]` : null
+  const outputType = output ? transfer(output) : null
+
+  const clear = (str) => {
+    if (!str) {
+      return str
+    }
+
+    if (str[str.length - 1] === ';') {
+      str = str.substring(0, str.length - 1)
+    }
+
+    return str.replace(/;([\]}>])/g, '$1')
+  }
+
+  return [clear(paramsText), clear(inputType), clear(outputType)]
 }
 
 module.exports = {
-  parseSRLFileContent,
+  parseSRLContent,
   transferToTypescirpt,
 }

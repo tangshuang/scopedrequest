@@ -2,17 +2,26 @@
  * 将SRL转换为typescript
  */
 
-const { parseSRLFileContent, transferToTypescirpt } = require('./compile')
+const { parseSRLContent, transferToTypescirpt } = require('./compile')
 const fs = require('fs')
 
-module.exports = function(file, options) {
-  const content = fs.readFileSync(file).toString()
-  const mapping = parseSRLFileContent(content)
+module.exports = function(content, tsdFile) {
+  const mapping = parseSRLContent(content)
   const codes = []
   Object.keys(mapping).forEach((name) => {
     const code = mapping[name]
-    const types = transferToTypescirpt(name, code, options)
-    codes.push(...types)
+    const [params, input, output] = transferToTypescirpt(code)
+
+    if (params) {
+      codes.push(`export type ${name}Params = ${params}`)
+    }
+    if (input) {
+      codes.push(`export type ${name}Input = ${input}`)
+    }
+    if (output) {
+      codes.push(`export type ${name}Ouptut = ${output}`)
+    }
   })
-  return codes.join('\n')
+  const contents = codes.join('\n')
+  fs.writeFileSync(tsdFile, contents);
 }
