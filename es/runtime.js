@@ -433,7 +433,7 @@ export class ScopedRequest {
     // 值是常规描述
     if (Array.isArray(valueInfo)) {
       const [operators, tag, exps = []] = valueInfo
-      if (tag && operators.indexOf('&') > -1) {
+      if (tag && operators === '&') {
         const fragment = fragments[tag]
         if (!fragment) {
           throw new Error(`${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
@@ -673,7 +673,7 @@ export class ScopedRequest {
       return true
     }).map((item) => {
       // 展开fragment来进行比较
-      if (Array.isArray(item.value) && typeof item.value[0] === 'string' && item.value[0].indexOf('&') > -1) {
+      if (Array.isArray(item.value) && typeof item.value[0] === 'string' && item.value[0] === '&') {
         const [, frag] = item.value
         const value = fragments[frag]
         if (!value) {
