@@ -82,22 +82,22 @@ const request = new ScopedRequest({
   formatters: {},
   // 模拟器，和格式器一一对应，返回结果为模拟的结果
   mockers: {},
-  // 访问器，在生成数据之前，对原始的ast节点进行调整，返回新的ast节点
-  visit(node) {
-    return node
-  },
-  // 调试器，接收一个含有相关信息的对象
+  // 调试器，当内部认为不正确时，接收一个含有相关信息的对象
   debug(e) {},
-
 
   // 是否载入ScopeX来进行表达式增强，如果不载入，则只能解析路径，不能执行运算和函数调用
   scopex: null,
   // 向内提供函数，建议函数名全部大写，例如 AVG() SUM()，仅传入scopex之后有效，不传入时，调用函数会报错
   fns: {},
+
+  // 运行run得到数据后，通过onData对数据进行统一转换
+  onData(data): data,
+  // 运行mock之后，通过onMock进行统一转换
+  onMock(data): data,
 })
 ```
 
-传入的参数是自定义的关键。
+传入的参数是自定义的关键。以上参数都是可选的
 
 ### fetch
 

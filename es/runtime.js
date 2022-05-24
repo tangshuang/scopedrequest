@@ -298,6 +298,11 @@ export class ScopedRequest {
         }).then(through).catch(reject)
       }
       through()
+    }).then((data) => {
+      if (this.options.onData) {
+        return this.options.onData(data)
+      }
+      return data
     })
   }
 
@@ -360,11 +365,10 @@ export class ScopedRequest {
    * @returns
    */
   create(node, data, { fragments, results, context, index }) {
-    const { debug, visit } = this.options
+    const { debug } = this.options
     const { keyPath = [], command, url, alias } = context
 
-    const visited = visit?.(node) || node
-    const { key: keyInfo, value: valueInfo } = visited
+    const { key: keyInfo, value: valueInfo } = node
     const [name, decorators] = keyInfo || []
 
     if (typeof index !== 'undefined' && typeof name !== 'undefined' && +name !== +index) {
@@ -1005,6 +1009,10 @@ export class ScopedRequest {
         }
       })
     })
+
+    if (this.options.onMock) {
+      return this.options.onMock(final)
+    }
 
     return final
   }
