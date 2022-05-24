@@ -814,16 +814,17 @@ export class ScopedRequest {
       ...mockers,
     }
     const willExist = () => parseInt((Math.random() * 100 % 2) + '', 10)
-    const fn = (structure, context = {}) => {
-      const { keyPath = [] } = context
-
-      if (keyPath.length > 20) {
+    const breakFragment = (keyPath) => {
+      if (keyPath.length > 10) {
         debug?.({
-          message: `深度大于20 ${keyPath.join('.')} 被强制阻断`,
+          message: `深度大于10 ${keyPath.join('.')} 被强制阻断`,
           level: 'warn',
         })
-        return null
+        return true
       }
+    }
+    const fn = (structure, context = {}) => {
+      const { keyPath = [] } = context
 
       /**
        * 模拟对象
@@ -834,7 +835,8 @@ export class ScopedRequest {
           const { key: keyInfo, value: valueInfo } = prop
           const [key, decorators] = keyInfo || []
 
-          if (decorators?.indexOf('?') > -1 && !willExist()) {
+          const isOptional = decorators?.indexOf('?') > -1
+          if (isOptional && !willExist()) {
             return
           }
 
@@ -855,6 +857,11 @@ export class ScopedRequest {
               if (!fragment) {
                 throw new Error(`${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
               }
+
+              if (breakFragment(keyPath)) {
+                return
+              }
+
               const out = fn(fragment, currContext)
               output[key] = out
             }
@@ -886,7 +893,7 @@ export class ScopedRequest {
       if (structure.type === TYPES.ARRAY) {
         const output = []
         const { nodes } = structure
-        for (let i = 0; i < 10; i ++) {
+        for (let i = 0, len = Math.floor(Math.random() * 10); i < len; i ++) {
           if (!willExist()) {
             continue
           }
@@ -916,6 +923,11 @@ export class ScopedRequest {
               if (!fragment) {
                 throw new Error(`${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
               }
+
+              if (breakFragment(keyPath)) {
+                return
+              }
+
               const out = fn(fragment, currContext)
               output.push(out)
             }
@@ -971,6 +983,11 @@ export class ScopedRequest {
               if (!fragment) {
                 throw new Error(`${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
               }
+
+              if (breakFragment(keyPath)) {
+                return
+              }
+
               const out = fn(fragment, currContext)
               output[index] = out
             }

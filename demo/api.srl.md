@@ -6,6 +6,15 @@ FRAGMENT DATA: {
   age: number
 
   data: &DATA
+
+  books: [
+    {
+      name: string
+    },
+    {
+      title: string
+    }
+  ]
 }
 ```
 
