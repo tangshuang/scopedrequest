@@ -1,6 +1,6 @@
 {
   "name": "scopedrequest",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "",
   "main": "index.js",
   "module": "es/index.js",
