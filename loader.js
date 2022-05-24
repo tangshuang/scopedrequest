@@ -15,7 +15,12 @@ module.exports = function(content) {
   }
   Object.keys(mapping).forEach((name) => {
     const code = mapping[name]
-    codes.push(`export const ${name} = \`$\{$} ${code}\`;`)
+    if ($) {
+      codes.push(`export const ${name} = \`$\{$} ${code}\`;`)
+    }
+    else {
+      codes.push(`export const ${name} = \`${code}\`;`)
+    }
   })
   return codes.join('\n')
 }
