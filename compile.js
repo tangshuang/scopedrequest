@@ -1,5 +1,21 @@
 const { interpret, TYPES } = require('./index')
 
+const clear = (str) => {
+  if (!str) {
+    return str
+  }
+
+  if (str[str.length - 1] === ';') {
+    str = str.substring(0, str.length - 1)
+  }
+
+  str = str.replace(/;([\]}>])/g, '$1')
+  str = str.replace(/;+/g, ';')
+  str = str.replace(/:\s+/g, ':')
+
+  return str
+}
+
 function parseSRLContent(content) {
   const lines = content.split('\n')
   const usable = []
@@ -7,19 +23,27 @@ function parseSRLContent(content) {
   let inSide = false
   lines.forEach((line) => {
     const text = line.trim()
-    if (/#+\s+\w+$/.test(text)) {
+    if (/##+\s+\w+$/.test(text)) {
       item = {
         name: text.replace(/#+\s+/, ''),
         codes: [],
       }
     }
     else if (item && inSide && text.indexOf('```') === 0) {
-      item.codes = item.codes.join('').replace(/,(}|]|>)/g, '$1').replace(/([\{\}\[\]<>,]\w+:)\s+/g, '$1').replace(/\s?->\s?/, '->')
+      const codes = item.codes.join('').replace(/,(}|]|>)/g, '$1').replace(/([\{\}\[\]<>,]\w+:)\s+/g, '$1').replace(/\s?->\s?/, '->')
+      item.codes = clear(codes)
       usable.push(item)
       item = null
       inSide = false
     }
     else if (text.indexOf('```') === 0 && item && !inSide) {
+      inSide = true
+    }
+    else if (text.indexOf('```') === 0 && !item && !inSide) {
+      item = {
+        name: '$',
+        codes: [],
+      }
       inSide = true
     }
     else if (text.indexOf('//') === 0) {
@@ -35,7 +59,7 @@ function parseSRLContent(content) {
         str = text
       }
       else {
-        str = text + ','
+        str = text + ';'
       }
       item.codes.push(str)
     }
@@ -47,8 +71,9 @@ function parseSRLContent(content) {
   return mapping
 }
 
-function transferToTypescirpt(code) {
-  const { groups, fragments } = interpret(code)
+function transferToTypescirpt(code, { shared, name }) {
+  const originCode = shared ? shared + ';' + code : code
+  const { groups, fragments } = interpret(originCode)
 
   const dataList = []
   const resMapping = {}
@@ -91,12 +116,16 @@ function transferToTypescirpt(code) {
     paramsText += '}'
   }
 
+  const usedFragments = {}
+
   const transfer = (shape) => {
     if (Array.isArray(shape)) {
       let text = ''
       const [operators, tag, exps = []] = shape
       if (operators.indexOf('&') > -1) {
-        text += transfer(fragments[tag])
+        const frag = name ? name.toUpperCase() + '_' + tag : tag
+        usedFragments[frag] = 1
+        text += frag
       }
       else if (!exps.length) {
         text += tag
@@ -157,19 +186,25 @@ function transferToTypescirpt(code) {
   const inputType = dataInput.length ? `[${dataInput.join(',')}]` : null
   const outputType = output ? transfer(output) : null
 
-  const clear = (str) => {
-    if (!str) {
-      return str
+  // 必须放在后面，因为在上面的transfer中会对usedFragments进行收集
+  const fragmentsKeys = Object.keys(fragments)
+  let fragmentsMapping = {}
+  fragmentsKeys.forEach((key) => {
+    const frag = name ? name.toUpperCase() + '_' + key : key
+    if (!usedFragments[frag]) {
+      return
     }
+    const fragment = fragments[key]
+    const fragType = transfer(fragment)
+    fragmentsMapping[frag] = clear(fragType)
+  })
 
-    if (str[str.length - 1] === ';') {
-      str = str.substring(0, str.length - 1)
-    }
-
-    return str.replace(/;([\]}>])/g, '$1')
+  return {
+    types: fragmentsMapping,
+    params: clear(paramsText),
+    input: clear(inputType),
+    output: clear(outputType),
   }
-
-  return [clear(paramsText), clear(inputType), clear(outputType)]
 }
 
 module.exports = {

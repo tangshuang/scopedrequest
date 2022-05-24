@@ -6,11 +6,16 @@ const { parseSRLContent, transferToTypescirpt } = require('./compile')
 const fs = require('fs')
 
 module.exports = function(content, tsdFile) {
-  const mapping = parseSRLContent(content)
+  const { $, ...mapping } = parseSRLContent(content)
   const codes = []
   Object.keys(mapping).forEach((name) => {
     const code = mapping[name]
-    const [params, input, output] = transferToTypescirpt(code)
+    const { params, input, output, types } = transferToTypescirpt(code, { shared: $, name })
+
+    Object.keys(types).forEach((key) => {
+      const frag = types[key]
+      codes.push(`type ${key} = ${frag}`)
+    })
 
     codes.push(`export declare const ${name}: string`)
     if (params) {

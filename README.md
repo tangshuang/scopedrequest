@@ -235,7 +235,19 @@ ScopedRequest.mock(`
 你可以创建一个 .srl.md 文件来包含多个 request 并且通过 webpack 来实现自动导出。首先，我们创建一个名叫 requests.srl.md 的文件：
 
 ```md
-# detail
+# 接口说明
+
+下面这个部分是整个文档共享部分，可在下方全部接口中使用。
+在生成文档/代码时，它实际上会产生多份。
+
+\```
+FRAGMENT SOME_DATA: {
+  name
+  age
+}
+\```
+
+## detail
 
 这里可以写一些注释，所有的语法被放在 \``` 内部.
 
@@ -246,7 +258,7 @@ GET "..." -> {
 }
 \```
 
-# list
+## list
 
 \```
 GET "..." -> [
@@ -267,7 +279,7 @@ import { ScopedRequest } from 'scopedrequest'
 const data = await ScopedRequest.run(detail, { id: 111 })
 ```
 
-我们从 .srl.md 中导入了 `#` 后面的名字。接下来，我们要通过webpack loader让这个导入真正可用。
+我们从 .srl.md 中导入了 `##` 后面的名字。接下来，我们要通过webpack loader让这个导入真正可用。*注意，必须是##开头，而非单个#开头。*
 
 ```js
 // webpack.config.js
