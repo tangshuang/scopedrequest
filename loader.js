@@ -16,7 +16,7 @@ module.exports = function(content) {
   Object.keys(mapping).forEach((name) => {
     const code = mapping[name]
     if ($) {
-      codes.push(`export const ${name} = \`$\{$} ${code}\`;`)
+      codes.push(`export const ${name} = \`$\{$}; ${code}\`;`)
     }
     else {
       codes.push(`export const ${name} = \`${code}\`;`)

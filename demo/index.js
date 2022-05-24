@@ -197,6 +197,22 @@ async function fns() {
   console.log('fns:', data)
 }
 
+async function mock() {
+  const data = await ScopedRequest.mock(`
+    FRAGMENT DATA: {
+      name: string
+      age: number
+      children?: [&DATA]
+    }
+
+    GET "" -> {
+      code: number
+      data: &DATA
+    }
+  `)
+  console.log('mock:', data)
+}
+
 window.basic = basic;
 window.post = post;
 window.httpHeaders = headers;
@@ -206,3 +222,4 @@ window.formatters = formatters
 window.decorate = decorate;
 window.fragment = fragment;
 window.fns = fns;
+window.mock = mock;

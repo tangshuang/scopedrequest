@@ -817,6 +817,14 @@ export class ScopedRequest {
     const fn = (structure, context = {}) => {
       const { keyPath = [] } = context
 
+      if (keyPath.length > 20) {
+        debug?.({
+          message: `深度大于20 ${keyPath.join('.')} 被强制阻断`,
+          level: 'warn',
+        })
+        return null
+      }
+
       /**
        * 模拟对象
        */
