@@ -3,9 +3,8 @@
  */
 
 const { parseSRLContent, transferToTypescirpt } = require('./compile')
-const fs = require('fs')
 
-module.exports = function(content, tsdFile) {
+module.exports = function(content) {
   const { $, ...mapping } = parseSRLContent(content)
   const codes = []
   Object.keys(mapping).forEach((name) => {
@@ -29,5 +28,5 @@ module.exports = function(content, tsdFile) {
     }
   })
   const contents = codes.join('\n')
-  fs.writeFileSync(tsdFile, contents);
+  return contents
 }

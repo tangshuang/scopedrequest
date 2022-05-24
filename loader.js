@@ -1,11 +1,13 @@
 const { parseSRLContent } = require('./compile')
 const transfer = require('./tsd')
+const fs = require('fs')
 
 module.exports = function(content) {
   const options = this.getOptions()
   const file = this.resourcePath
   if (file && options && options.ts) {
-    transfer(content, file + '.d.ts')
+    const tsd = transfer(content)
+    fs.writeFile(file + '.d.ts', tsd, () => {})
   }
 
   const { $, ...mapping } = parseSRLContent(content)
