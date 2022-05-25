@@ -268,12 +268,11 @@ export class ScopedRequest {
       )
     }
 
+    const allRequests = []
     return await new Promise((resolve, reject) => {
       let i = 0
       let meet = 0
       let isCompelet = false
-
-      const allRequests = []
 
       const through = () => {
         const group = groups[i]
