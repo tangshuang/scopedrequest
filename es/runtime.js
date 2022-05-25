@@ -190,6 +190,8 @@ export class ScopedRequest {
       return replaceBy(pathname) + '?' + pairs.join('&')
     }
 
+    const allFetchings = []
+
     const fn = async (node, index = -1) => {
       const { args = [], options = {}, alias, command, req, res } = node
       const [url] = args
@@ -229,8 +231,10 @@ export class ScopedRequest {
       }
 
       const data = await this.fetch(realUrl, { method: command, headers: realHeaders }, realData, context)
+
+      let output = null
       if (res) {
-        return this.generate(
+        output = this.generate(
           {
             structure: res,
             data,
@@ -248,6 +252,17 @@ export class ScopedRequest {
           },
         )
       }
+
+      allFetchings[index] = {
+        url: realUrl,
+        data,
+        method: command,
+        headers: realHeaders,
+        payload: realData,
+        node,
+      }
+
+      return output
     }
 
     const compose = (node) => {
@@ -268,11 +283,12 @@ export class ScopedRequest {
       )
     }
 
-    const allRequests = []
     return await new Promise((resolve, reject) => {
       let i = 0
       let meet = 0
       let isCompelet = false
+
+      const allRequests = []
 
       const through = () => {
         const group = groups[i]
@@ -339,10 +355,8 @@ export class ScopedRequest {
       }
       through()
     }).then((data) => {
-      return Promise.all(allRequests).then((requestedDataList) => [data, requestedDataList])
-    }).then(([data, requestedDataList]) => {
       if (this.options.onData) {
-        return this.options.onData(data, { code, params, request: dataList, context, response: requestedDataList })
+        return this.options.onData(data, { code, params, context, requests: allFetchings })
       }
       return data
     })
