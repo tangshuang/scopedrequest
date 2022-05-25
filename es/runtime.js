@@ -112,7 +112,7 @@ export class ScopedRequest {
     // 保证编译也是异步的，这样可以在catch中捕获错误
     await sleep()
 
-    const { scopex, debug, fns = {} } = this.options
+    const { debug } = this.options
     const { groups, fragments, commands } = this.compile(code)
 
     /**
@@ -340,8 +340,10 @@ export class ScopedRequest {
       }
       through()
     }).then((data) => {
+      return Promise.all(allRequests).then((requestedDataList) => [data, requestedDataList])
+    }).then(([data, requestedDataList]) => {
       if (this.options.onData) {
-        return this.options.onData(data)
+        return this.options.onData(data, { code, params, request: dataList, context, response: requestedDataList })
       }
       return data
     })
@@ -1074,7 +1076,7 @@ export class ScopedRequest {
     })
 
     if (this.options.onMock) {
-      return this.options.onMock(final)
+      return this.options.onMock(final, { code })
     }
 
     return final
