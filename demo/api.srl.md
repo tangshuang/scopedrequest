@@ -37,3 +37,34 @@ POST "/api/contents/{id}" + {
   id
 }
 ```
+
+## test
+
+```
+GET "/api/v1/investment/companies/{id}" -> {
+  name: string
+  description: string
+
+  professions: [
+    {
+      id
+      name
+    }
+  ]
+  regions: [
+    {
+      id
+      name
+    }
+  ]
+
+  round: {
+    id: string
+    name: string
+  }
+  star: {
+    id: string
+    name: string
+  }
+}
+```

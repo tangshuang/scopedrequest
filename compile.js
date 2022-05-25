@@ -55,7 +55,7 @@ function parseSRLContent(content) {
       if (end === ';' || end === ',') {
         str = text
       }
-      else if (['{', '}', '[', ']', '<', '>'].indexOf(end) > -1) {
+      else if (['{', '[', '<'].indexOf(end) > -1) {
         str = text
       }
       else {
