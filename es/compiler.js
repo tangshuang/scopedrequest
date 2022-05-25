@@ -389,6 +389,11 @@ export function parse(tokens) {
     commands.push(command)
   }
 
+  const lastItem = commands[commands.length - 1]
+  if (lastItem.alias) {
+    throw new Error(`905: (${tokens})中最后一条语句不允许使用as语法`)
+  }
+
   return {
     type: 'Program',
     body: commands,

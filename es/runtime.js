@@ -112,6 +112,7 @@ export class ScopedRequest {
     // 保证编译也是异步的，这样可以在catch中捕获错误
     await sleep()
 
+    const { scopex, debug, fns = {} } = this.options
     const { groups, fragments, commands } = this.compile(code)
 
     /**
@@ -146,6 +147,49 @@ export class ScopedRequest {
       })
     }
 
+    // 对url的search部分特殊处理
+    const replaceUrl = (str) => {
+      const [pathname, search] = str.split('?')
+      if (!search) {
+        return replaceBy(pathname)
+      }
+
+      const pairs = search.split('&').map((item) => {
+        const [key, value] = item.split('=')
+        if (!value) {
+          return
+        }
+
+        if (/^\{[a-z][a-zA-Z0-9_]+\}$/.test(value)) {
+          const content = value.substring(1, value.length - 1)
+          const end = content[content.length - 1]
+          let paramKey = content
+          if (end === '!') {
+            paramKey = content.substring(0, content.length - 1)
+          }
+
+          // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
+          if (!params[paramKey]) {
+            if (end === '!') {
+              debug?.({
+                level: 'error',
+                message: `${str} ${paramKey} is required, but not given.`,
+              })
+            }
+            return
+          }
+
+          return `${key}=${params[paramKey]}`
+        }
+      }).filter(item => item)
+
+      if (!pairs.length) {
+        return replaceBy(pathname)
+      }
+
+      return replaceBy(pathname) + '?' + pairs.join('&')
+    }
+
     const fn = async (node, index = -1) => {
       const { args = [], options = {}, alias, command, req, res } = node
       const [url] = args
@@ -156,7 +200,7 @@ export class ScopedRequest {
 
       const { headers = {} } = options
 
-      const realUrl = replaceBy(url)
+      const realUrl = replaceUrl(url)
       const realHeaders = Object.keys(headers).reduce((obj, key) => {
         obj[key] = replaceBy(headers[key])
         return obj
@@ -250,9 +294,6 @@ export class ScopedRequest {
 
             // 最后一条输出命令
             const isFinal = i === groups.length - 1 && n === group.length - 1
-            if (isFinal && alias) {
-              throw new Error(`905: run(${code})中最后一条语句不允许使用as语法`)
-            }
 
             if (isMatch(command, 'compose')) {
               // compose 自带 await 功能
@@ -1017,9 +1058,6 @@ export class ScopedRequest {
       group.forEach((item, n) => {
         const isFinal = i === groups.length - 1 && n === group.length - 1
         const { alias, res } = item
-        if (isFinal && alias) {
-          throw new Error(`905: run(${code})中最后一条语句不允许使用as语法`)
-        }
 
         if (!res) {
           return
