@@ -80,7 +80,7 @@ function transferToTypescirpt(code, { shared, name }) {
   let output = null
 
   const params = {}
-  const findParams = str => str && str.replace(/\{(\w+)\}/g, (_, key) => params[key] = 1)
+  const findParams = str => str && str.replace(/\{.*?\}/g, (_, key) => params[key] = 1)
 
   groups.forEach((group, gIndex) => {
     group.forEach((item, index) => {
