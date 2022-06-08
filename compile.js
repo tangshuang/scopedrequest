@@ -110,7 +110,12 @@ function transferToTypescirpt(code, { shared, name }) {
   let paramsText = ''
   if (paramsKeys.length) {
     paramsText += '{'
-    paramsKeys.forEach((key) => {
+    paramsKeys.forEach((content) => {
+      const end = content[content.length - 1]
+      let key = content
+      if (end === '!') {
+        key = content.substring(0, content.length - 1)
+      }
       paramsText += key + ':string|number;'
     })
     paramsText += '}'

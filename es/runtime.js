@@ -133,11 +133,20 @@ export class ScopedRequest {
     const results = {}
 
     // 替换参数部分插值和表达式
-    const replaceBy = (str) => {
+    const replaceBy = (str, warning) => {
       return str.replace(/{([a-z][a-zA-Z0-9_]+)}/g, (matched, key) => {
         if (params && key in params) {
           return params[key]
         }
+
+        // 必传错误提示
+        if (warning && (!params || !(key in params))) {
+          debug?.({
+            level: 'error',
+            message: `${str} ${key} 必须传入`,
+          })
+        }
+
         return matched
       }).replace(/\((.*?)\)/g, (_, expcom) => {
         const exps = expcom.split(',')
@@ -150,8 +159,9 @@ export class ScopedRequest {
     // 对url的search部分特殊处理
     const replaceUrl = (str) => {
       const [pathname, search] = str.split('?')
+      const path = replaceBy(pathname, true)
       if (!search) {
-        return replaceBy(pathname)
+        return path
       }
 
       const pairs = search.split('&').map((item) => {
@@ -164,17 +174,21 @@ export class ScopedRequest {
           const content = value.substring(1, value.length - 1)
           const end = content[content.length - 1]
           let paramKey = content
-          if (end === '!') {
+          if (end === '!' || end === '?') {
             paramKey = content.substring(0, content.length - 1)
           }
 
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
           if (!params[paramKey]) {
-            if (end === '!') {
+            if (end !== '?') {
               debug?.({
                 level: 'error',
-                message: `${str} ${paramKey} is required, but not given.`,
+                message: `${str} ${paramKey} 必须传入`,
               })
+            }
+            // 强制给参数，即使为空
+            if (end === '!') {
+              return `${key}=`
             }
             return
           }
@@ -184,10 +198,10 @@ export class ScopedRequest {
       }).filter(item => item)
 
       if (!pairs.length) {
-        return replaceBy(pathname)
+        return path
       }
 
-      return replaceBy(pathname) + '?' + pairs.join('&')
+      return path + '?' + pairs.join('&')
     }
 
     const allFetchings = []
@@ -204,7 +218,7 @@ export class ScopedRequest {
 
       const realUrl = replaceUrl(url)
       const realHeaders = Object.keys(headers).reduce((obj, key) => {
-        obj[key] = replaceBy(headers[key])
+        obj[key] = replaceBy(headers[key], true)
         return obj
       }, {})
 
