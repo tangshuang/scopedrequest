@@ -11,9 +11,12 @@ module.exports = function(content) {
 
     // 替换文件后缀，比如把 .srl.md 替换为 .srl.ts
     if (options.tsFileExtReplace) {
-      const s = file.split(path.sep)
-      s.pop()
-      const tsfile = s.join(path.sep) + '.ts'
+      const s = file.split(path.sep);
+      const filename = s.pop();
+      const b = filename.split('.');
+      b.pop();
+      const basename = [...b, 'ts'].join('.');
+      const tsfile = [...s, basename].join(path.sep);
       fs.writeFile(tsfile, ts, () => {})
     }
     else {
