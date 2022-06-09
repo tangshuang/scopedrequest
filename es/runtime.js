@@ -135,12 +135,12 @@ export class ScopedRequest {
     // 替换参数部分插值和表达式
     const replaceBy = (str, warning) => {
       return str.replace(/{([a-z][a-zA-Z0-9_]+)}/g, (matched, key) => {
-        if (params && key in params) {
+        if (params && typeof params[key] !== 'undefined') {
           return params[key]
         }
 
         // 必传错误提示
-        if (warning && (!params || !(key in params))) {
+        if (warning && (!params || typeof params[key] === 'undefined')) {
           debug?.({
             level: 'error',
             message: `${str} ${key} 必须传入`,
@@ -179,7 +179,7 @@ export class ScopedRequest {
           }
 
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
-          if (!params[paramKey]) {
+          if (typeof params[paramKey] === 'undefined') {
             if (end !== '?') {
               debug?.({
                 level: 'error',
