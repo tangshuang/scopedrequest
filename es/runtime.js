@@ -588,6 +588,16 @@ export class ScopedRequest {
         }
       })
 
+      if (this.options.keepProperty) {
+        const keys = Object.keys(data)
+        keys.forEach((key) => {
+          const value = data[key]
+          if (this.options.keepProperty(key, value, data)) {
+            output[key] = value
+          }
+        })
+      }
+
       return output
     }
 

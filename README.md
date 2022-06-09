@@ -94,6 +94,8 @@ const request = new ScopedRequest({
   onData(data): data,
   // 运行mock之后，通过onMock进行统一转换
   onMock(data): data,
+  // 用于决定一个属性是否要保留，只对对象有效
+  keepProperty(key, value, data): boolean,
 })
 ```
 
