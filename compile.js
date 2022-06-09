@@ -165,7 +165,7 @@ function transferToTypescirpt(code, { shared, name }) {
         const type = transfer(value)
         itemTexts.push(type)
       })
-      const itemText = itemTexts.join('|')
+      const itemText = itemTexts.join('|') || 'any'
       const text = 'Array<' + itemText + '>;'
       return text
     }
