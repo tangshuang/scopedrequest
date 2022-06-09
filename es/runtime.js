@@ -639,8 +639,15 @@ export class ScopedRequest {
         }
       }
 
-      const output = []
       const { nodes } = structure
+
+      // 给了一个空数组
+      // 表示这个属性必须是一个数组，但无需检查内部结构，直接返回数据
+      if (!nodes.length) {
+        return data
+      }
+
+      const output = []
       data.forEach((value, index) => {
         // 从多个里面找出当前值最接近的那一个
         let node = this.choose(nodes, value, index, fragments)
