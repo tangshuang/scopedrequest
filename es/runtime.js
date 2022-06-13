@@ -158,7 +158,9 @@ export class ScopedRequest {
 
     // 对url的search部分特殊处理
     const replaceUrl = (str) => {
-      const [pathname, search] = str.split('?')
+      // 此处要注意，url中可能存在多个?，因为我们允许通过 {xxx?} 的参数形式
+      const [pathname, ...queries] = str.split('?')
+      const search = queries.join('?')
       const path = replaceBy(pathname, true)
       if (!search) {
         return path
