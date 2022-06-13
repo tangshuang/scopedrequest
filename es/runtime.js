@@ -172,7 +172,7 @@ export class ScopedRequest {
           return
         }
 
-        if (/^\{[a-z][a-zA-Z0-9_]+\}$/.test(value)) {
+        if (/^\{[a-z][a-zA-Z0-9_]+[!?]?\}$/.test(value)) {
           const content = value.substring(1, value.length - 1)
           const end = content[content.length - 1]
           let paramKey = content
