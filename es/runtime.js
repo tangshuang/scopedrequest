@@ -793,9 +793,21 @@ export class ScopedRequest {
         return
       }
 
+      const getType = (desc) => {
+        if (desc?.type === TYPES.OBJECT) {
+          return 'object'
+        }
+        if (desc?.type === TYPES.ARRAY || desc?.type === TYPES.TUPLE) {
+          return 'array'
+        }
+        if (desc?.type === TYPES.PROP || desc?.type === TYPES.ITEM) {
+          return desc?.value?.[1]
+        }
+      }
+
       // TODO choose real item, now not support sub-array
       // [[string, number], [string, boolean]]
-      const typesOfData = value.map(v => typeof v)
+      const typesOfData = value.map(v => Array.isArray(v) ? 'array' : typeof v)
       const scores = subItems.map((item) => {
         const sub = item.value
         if (sub.type === TYPES.TUPLE) {
