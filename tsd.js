@@ -38,7 +38,7 @@ module.exports = function(content) {
     }
 
     if (output) {
-      codes.push(`export type ${name}Ouptut = ${output}`)
+      codes.push(`export type ${name}Output = ${output}`)
     }
   })
   const contents = codes.join('\n')
