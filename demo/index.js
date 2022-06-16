@@ -213,6 +213,36 @@ async function mock() {
   console.log('mock:', data)
 }
 
+async function debug() {
+  const request = new ScopedRequest({
+    debug({
+      url,
+      should,
+      receive,
+      keyPath,
+      command,
+    }) {
+      console.error(`${url || command} ${keyPath.join('.') || '-'} should be "${should}" but receive:`, receive)
+    }
+  })
+  await request.run(`
+  GET "https://api.github.com/search/repositories?q=reactjs" -> {
+    items: [
+      {
+        id: string
+        full_name
+        description
+        html_url
+      }
+    ],
+  } as Data
+
+  COMPOSE -> {
+    count: (COUNT(Data.items))
+  }
+`)
+}
+
 window.basic = basic;
 window.post = post;
 window.httpHeaders = headers;
@@ -223,3 +253,4 @@ window.decorate = decorate;
 window.fragment = fragment;
 window.fns = fns;
 window.mock = mock;
+window.debug = debug;

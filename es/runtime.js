@@ -263,6 +263,7 @@ export class ScopedRequest {
             url,
             alias,
             res,
+            target: realUrl,
             root: data,
             use: 'res',
             keyPath: [],
