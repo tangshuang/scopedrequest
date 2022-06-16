@@ -16,7 +16,7 @@ const defaultMockers = {
 
 const defaultFormatters = {
   string: () => function(value, keyPath) {
-    const { debug, url, command } = this
+    const { debug, target, command } = this
 
     if (typeof value === 'string') {
       return value
@@ -24,7 +24,7 @@ const defaultFormatters = {
 
     debug?.({
       command,
-      url,
+      url: target,
       keyPath,
       should: 'string',
       receive: value,
@@ -32,7 +32,7 @@ const defaultFormatters = {
     return value === null || value === undefined ? '' : '' + value
   },
   number: (defaultValue) => function(value, keyPath) {
-    const { debug, url, command } = this
+    const { debug, target, command } = this
 
     if (typeof value === 'number' && !Number.isNaN(value)) {
       return value
@@ -44,7 +44,7 @@ const defaultFormatters = {
 
     debug?.({
       command,
-      url,
+      url: target,
       keyPath,
       should: 'number',
       receive: value,
@@ -52,7 +52,7 @@ const defaultFormatters = {
     return +defaultValue || 0
   },
   boolean: () => function(value, keyPath) {
-    const { debug, url, command } = this
+    const { debug, target, command } = this
 
     if (typeof value === 'boolean') {
       return value
@@ -60,7 +60,7 @@ const defaultFormatters = {
 
     debug?.({
       command,
-      url,
+      url: target,
       keyPath,
       should: 'boolean',
       receive: value,
@@ -239,6 +239,7 @@ export class ScopedRequest {
             url,
             alias,
             req,
+            target: realUrl,
             root: postData,
             use: 'req',
             keyPath: [],
@@ -438,7 +439,7 @@ export class ScopedRequest {
    */
   create(node, data, { fragments, results, context, index }) {
     const { debug } = this.options
-    const { keyPath = [], command, url, alias } = context
+    const { keyPath = [], command, target, alias } = context
 
     const { key: keyInfo, value: valueInfo } = node
     const [name, decorators] = keyInfo || []
@@ -446,7 +447,7 @@ export class ScopedRequest {
     if (typeof index !== 'undefined' && typeof name !== 'undefined' && +name !== +index) {
       debug?.({
         command,
-        url,
+        url: target,
         keyPath,
         alias,
         message: `结构体中的${keyPath.join('.')}.${name}与传入的 ${index} 不匹配，请检查`,
@@ -559,7 +560,7 @@ export class ScopedRequest {
   generate(information, context) {
     // compose中没有传data
     const { structure, results, fragments } = information
-    const { keyPath = [], command, url, alias } = context
+    const { keyPath = [], command, target, alias } = context
     const { debug } = this.options
 
     let data = information.data
@@ -571,7 +572,7 @@ export class ScopedRequest {
       if (typeof data !== 'object' || !data) {
         debug?.({
           command,
-          url,
+          url: target,
           keyPath,
           alias,
           should: 'object',
@@ -618,7 +619,7 @@ export class ScopedRequest {
           })
           debug?.({
             command,
-            url,
+            url: target,
             keyPath,
             alias,
             should: 'array',
@@ -630,7 +631,7 @@ export class ScopedRequest {
         else {
           debug?.({
             command,
-            url,
+            url: target,
             keyPath,
             alias,
             should: 'array',
@@ -689,7 +690,7 @@ export class ScopedRequest {
           })
           debug?.({
             command,
-            url,
+            url: target,
             keyPath,
             alias,
             should: 'tuple',
@@ -701,7 +702,7 @@ export class ScopedRequest {
         else {
           debug?.({
             command,
-            url,
+            url: target,
             keyPath,
             alias,
             should: 'tuple',
@@ -718,7 +719,7 @@ export class ScopedRequest {
       if (data.length !== nodes.length) {
         debug?.({
           command,
-          url,
+          url: target,
           keyPath,
           alias,
           should: 'tuple',
