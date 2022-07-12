@@ -16,7 +16,7 @@ const defaultMockers = {
 
 const defaultFormatters = {
   string: () => function(value, keyPath) {
-    const { debug, target, command } = this
+    const { debug, target, command, direction } = this
 
     if (typeof value === 'string') {
       return value
@@ -28,6 +28,7 @@ const defaultFormatters = {
       keyPath,
       should: 'string',
       receive: value,
+      direction,
     })
     return value === null || value === undefined ? '' : '' + value
   },
@@ -48,6 +49,7 @@ const defaultFormatters = {
       keyPath,
       should: 'number',
       receive: value,
+      direction,
     })
     return +defaultValue || 0
   },
@@ -64,6 +66,7 @@ const defaultFormatters = {
       keyPath,
       should: 'boolean',
       receive: value,
+      direction,
     })
     return !!value
   },
@@ -243,6 +246,7 @@ export class ScopedRequest {
             root: postData,
             use: 'req',
             keyPath: [],
+            direction: 'request',
           },
         )
       }
@@ -267,6 +271,7 @@ export class ScopedRequest {
             root: data,
             use: 'res',
             keyPath: [],
+            direction: 'response',
           },
         )
       }
@@ -297,6 +302,7 @@ export class ScopedRequest {
           res,
           use: 'res',
           keyPath: [],
+          direction: 'response',
         },
       )
     }
@@ -440,7 +446,7 @@ export class ScopedRequest {
    */
   create(node, data, { fragments, results, context, index }) {
     const { debug } = this.options
-    const { keyPath = [], command, target, alias } = context
+    const { keyPath = [], command, target, alias, direction } = context
 
     const { key: keyInfo, value: valueInfo } = node
     const [name, decorators] = keyInfo || []
@@ -453,6 +459,7 @@ export class ScopedRequest {
         alias,
         message: `结构体中的${keyPath.join('.')}.${name}与传入的 ${index} 不匹配，请检查`,
         level: 'debug',
+        direction,
       })
     }
 
@@ -507,7 +514,6 @@ export class ScopedRequest {
       return output
     }
 
-
     // 值是常规描述
     if (Array.isArray(valueInfo)) {
       const [operators, tag, exps = []] = valueInfo
@@ -561,7 +567,7 @@ export class ScopedRequest {
   generate(information, context) {
     // compose中没有传data
     const { structure, results, fragments } = information
-    const { keyPath = [], command, target, alias } = context
+    const { keyPath = [], command, target, alias, direction } = context
     const { debug } = this.options
 
     let data = information.data
@@ -578,6 +584,7 @@ export class ScopedRequest {
           alias,
           should: 'object',
           receive: data,
+          direction,
         })
         // 确保数据能被造出来，因为有些格式器可以凭空生成数据
         data = {}
@@ -627,6 +634,7 @@ export class ScopedRequest {
             receive: data,
             message: '将ArrayLike的对象转化为数组',
             level: 'warn',
+            direction,
           })
         }
         else {
@@ -637,6 +645,7 @@ export class ScopedRequest {
             alias,
             should: 'array',
             receive: data,
+            direction,
           })
           // 数组可以为空
           return []
@@ -698,6 +707,7 @@ export class ScopedRequest {
             receive: data,
             message: '将ArrayLike的对象转化为数组',
             level: 'warn',
+            direction,
           })
         }
         else {
@@ -708,6 +718,7 @@ export class ScopedRequest {
             alias,
             should: 'tuple',
             receive: data,
+            direction,
           })
           // 将数据重置为空对象，这样可以最终生成比较完整的数据
           data = []
@@ -726,6 +737,7 @@ export class ScopedRequest {
           should: 'tuple',
           shouldLength: nodes.length,
           receive: data,
+          direction,
         })
         // 调整数据长度，以适应元组长度
         data = data.slice(0, nodes.length)
