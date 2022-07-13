@@ -33,7 +33,7 @@ const defaultFormatters = {
     return value === null || value === undefined ? '' : '' + value
   },
   number: (defaultValue) => function(value, keyPath) {
-    const { debug, target, command } = this
+    const { debug, target, command, direction } = this
 
     if (typeof value === 'number' && !Number.isNaN(value)) {
       return value
@@ -54,7 +54,7 @@ const defaultFormatters = {
     return +defaultValue || 0
   },
   boolean: () => function(value, keyPath) {
-    const { debug, target, command } = this
+    const { debug, target, command, direction } = this
 
     if (typeof value === 'boolean') {
       return value
