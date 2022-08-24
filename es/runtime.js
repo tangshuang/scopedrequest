@@ -165,6 +165,7 @@ export class ScopedRequest {
       const [pathname, ...queries] = str.split('?')
       const search = queries.join('?')
       const path = replaceBy(pathname, true)
+
       if (!search) {
         return path
       }
@@ -200,6 +201,8 @@ export class ScopedRequest {
 
           return `${key}=${params[paramKey]}`
         }
+
+        return `${key}=${value}`
       }).filter(item => item)
 
       if (!pairs.length) {
