@@ -322,15 +322,22 @@ export class ScopedRequest {
         if (!group || isCompelet) {
           return
         }
-        return new Promise((next, stop) => {
-          const awaits = []
+        return new Promise((next) => {
           const awaitItem = group.find(item => item.type === TYPES.COMMAND && isMatch(item.command, 'await'))
           const awaitNames = awaitItem ? awaitItem.args : []
+
+          const awaitRequests = []
+          const groupRequests = []
 
           group.forEach((item, n) => {
             const { alias, command, req } = item
 
             if (isMatch(command, 'await')) {
+              // 一般 await 不允许是最后一条语句，这里做一个兜底
+              if (isFinal) {
+                resolve()
+                isCompelet = true
+              }
               return
             }
 
@@ -338,8 +345,9 @@ export class ScopedRequest {
             const isFinal = i === groups.length - 1 && n === group.length - 1
 
             if (isMatch(command, 'compose')) {
-              // compose 自带 await 功能
-              Promise.all(allRequests).then(() => {
+              // compose 自带 await 功能，要等之前的请求回来之后再执行 compose
+              // compose 只能使用之前已经定义了的alias
+              Promise.all([...allRequests]).then(() => {
                 const data = compose(item)
                 if (alias) {
                   results[alias] = data
@@ -348,7 +356,7 @@ export class ScopedRequest {
                   resolve(data)
                   isCompelet = true
                 }
-              })
+              }).catch(reject)
               return
             }
 
@@ -366,18 +374,30 @@ export class ScopedRequest {
                 isCompelet = true
               }
             })
-            if (alias) {
-              allRequests.push(p)
-            }
+
+            allRequests.push(p)
+            groupRequests.push(p)
             if (awaitNames.includes(alias)) {
-              awaits.push(p)
+              awaitRequests.push(p)
             }
           })
 
-          Promise.all(awaits).then(() => {
+          const goNext = () => {
             i ++
             next()
-          }).catch(stop)
+          }
+          if (awaitRequests.length) {
+            // 接住任何错误
+            Promise.all(groupRequests.filter(p => !awaitRequests.includes(p))).catch(reject)
+            // await 总是 group 的最后一条，所以到此，group 所有请求已发出，但是需要等待所有 await 子句结束才能进入下一个 group
+            Promise.all(awaitRequests).then(goNext).catch(reject)
+          }
+          else {
+            // 接住任何错误
+            Promise.all(groupRequests).catch(reject)
+            // 全部都是异步的，不需要像 awaitRequests 一样等待，直接进入下一步即可
+            goNext()
+          }
         }).then(through).catch(reject)
       }
       through()
