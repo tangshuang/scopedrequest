@@ -1,5 +1,5 @@
 import { TYPES, interpret } from './compiler.js'
-import { isMatch, sleep } from './utils.js'
+import { isMatch, sleep, parseKey, parseValue } from './utils.js'
 
 const defaultMockers = {
   string: () => () => {
@@ -173,19 +173,24 @@ export class ScopedRequest {
       const pairs = search.split('&').map((item) => {
         const [key, value] = item.split('=')
         if (!value) {
-          return
+          return `${key}=`
         }
 
         if (/^\{[a-z][a-zA-Z0-9_]+[!?]?\}$/.test(value)) {
-          const content = value.substring(1, value.length - 1)
-          const end = content[content.length - 1]
-          let paramKey = content
+          const paramExp = value.substring(1, value.length - 1)
+          const [before, after] = paramExp.split(':')
+          const end = before[before.length - 1]
+          let paramKey = before
           if (end === '!' || end === '?') {
-            paramKey = content.substring(0, content.length - 1)
+            paramKey = before.substring(0, before.length - 1)
           }
 
+          const paramValue = params[paramKey]
+          const [fn, args] = after ? paramKey(after) : []
+          const value = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
+
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
-          if (typeof params[paramKey] === 'undefined') {
+          if (typeof value === 'undefined') {
             if (end !== '?') {
               debug?.({
                 level: 'error',
@@ -199,11 +204,11 @@ export class ScopedRequest {
             return
           }
 
-          return `${key}=${params[paramKey]}`
+          return `${key}=${value}`
         }
 
         return `${key}=${value}`
-      }).filter(item => item)
+      }).filter(Boolean)
 
       if (!pairs.length) {
         return path

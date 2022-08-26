@@ -1,4 +1,4 @@
-import { isMatch, getStringHash } from './utils.js'
+import { isMatch, getStringHash, parseKey, parseValue } from './utils.js'
 
 export const TYPES  = {
   COMMAND: 'Command',
@@ -398,40 +398,6 @@ export function parse(tokens) {
     type: 'Program',
     body: commands,
   }
-}
-
-function parseKey(str) {
-  let name = ''
-  let decorators = ''
-  for (let i = 0; i < str.length; i ++) {
-    const char = str[i]
-    if (/^\w$/.test(char)) {
-      name += char
-    }
-    else {
-      decorators = str.substring(i)
-      break
-    }
-  }
-
-  return [name, decorators]
-}
-
-function parseValue(str) {
-  let operators = ''
-  let content = str
-  for (let i = 0; i < str.length; i ++) {
-    const char = str[i]
-    if (['&'].includes(char)) {
-      operators += char
-    }
-    else {
-      content = str.substring(i, str.length)
-      break
-    }
-  }
-
-  return [operators, content]
 }
 
 const caches = []

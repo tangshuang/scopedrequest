@@ -20,3 +20,37 @@ export function getStringHash(str) {
 
   return hash >>> 0
 }
+
+export function parseKey(str) {
+  let name = ''
+  let decorators = ''
+  for (let i = 0; i < str.length; i ++) {
+    const char = str[i]
+    if (/^\w$/.test(char)) {
+      name += char
+    }
+    else {
+      decorators = str.substring(i)
+      break
+    }
+  }
+
+  return [name, decorators]
+}
+
+export function parseValue(str) {
+  let operators = ''
+  let content = str
+  for (let i = 0; i < str.length; i ++) {
+    const char = str[i]
+    if (['&'].includes(char)) {
+      operators += char
+    }
+    else {
+      content = str.substring(i, str.length)
+      break
+    }
+  }
+
+  return [operators, content]
+}
