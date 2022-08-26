@@ -14,7 +14,7 @@ const defaultMockers = {
   boolean: () => () => [true, false][parseInt((Math.random() * 100 % 2) + '', 10)],
 }
 
-const defaultFormatters = {
+const defaultShapes = {
   string: () => function(value, keyPath) {
     const { debug, target, command, direction } = this
 
@@ -929,13 +929,13 @@ export class ScopedRequest {
   }
 
   format(value, fn, args, context) {
-    const { formatters = {} } = this.options
-    const allFormatters = {
-      ...defaultFormatters,
-      ...formatters,
+    const { shapes = {} } = this.options
+    const allShapes = {
+      ...defaultShapes,
+      ...shapes,
     }
     const { command, url, alias, keyPath, root } = context
-    const format = allFormatters[fn]
+    const format = allShapes[fn]
 
     if (!format) {
       throw new Error(`10009: 未定义${fn}格式 at ${command} ${url} ${alias} ${keyPath.join('.')}`)

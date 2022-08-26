@@ -103,9 +103,9 @@ async function wait() {
 }
 
 // 自定义格式器
-async function formatters() {
+async function shapes() {
   const data = await new ScopedRequest({
-    formatters: {
+    shapes: {
       date: (sep = '-') => function(value) {
         if (typeof value === 'number') {
           const date = new Date(value)
@@ -124,7 +124,7 @@ async function formatters() {
       ]
     }
   `)
-  console.log('formatter date:', data)
+  console.log('shape date:', data)
 }
 
 // 修饰符
@@ -248,7 +248,7 @@ window.post = post;
 window.httpHeaders = headers;
 window.compose = compose;
 window.wait = wait;
-window.formatters = formatters
+window.shapes = shapes
 window.decorate = decorate;
 window.fragment = fragment;
 window.fns = fns;

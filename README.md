@@ -79,7 +79,7 @@ const request = new ScopedRequest({
   // 覆盖数据请求过程
   async fetch(url, config, data, context) {},
   // 格式器
-  formatters: {},
+  shapes: {},
   // 模拟器，和格式器一一对应，返回结果为模拟的结果
   mockers: {},
   // 调试器，当内部认为不正确时，接收一个含有相关信息的对象
@@ -136,13 +136,13 @@ request.run(`
 })
 ```
 
-### formatters
+### shapes
 
 自定义格式化工具，你需要按照规范传入一系列的函数。
 
 ```js
 const options = {
-  formatters: {
+  shapes: {
     date: () => (value, keyPath, data) => {
       if (typeof value === 'number') {
         const d = new Date(value)
@@ -154,7 +154,7 @@ const options = {
 }
 ```
 
-一个formatter函数的结构如下：
+一个shape函数的结构如下：
 
 ```
 (...args:参数) => (value:值, keyPath:路径, data:最外层的数据) => 格式化之后的结果
@@ -230,7 +230,7 @@ ScopedRequest.mock(`
 
 为了和`run`保持一致的使用，mock以异步的形式返回数据。在使用时，你只需要把`run`方法替换为`mock`方法即可。
 
-另外，你可以传入 `mockers` 这个参数来对不同 formatter 进行mock。传入的mockers与`formatters`一致。
+另外，你可以传入 `mockers` 这个参数来对不同 shape 进行 mock。传入的 mockers 与 `shapes` 一致。
 
 ## 语言即文档
 

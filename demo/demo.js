@@ -258,9 +258,9 @@ console.log(interpret(progamStr))
 //   }).parse([1, 2, 3, 4, 5], `<string, number>`),
 // )
 
-// /////////////// formatters ///////////
+// /////////////// shapes ///////////
 // const q = new Request({
-//   formatters: {
+//   shapes: {
 //     date: ({ y, s }) => (value, keyPath, data) => {
 //       if (typeof value === 'number') {
 //         const d = new Date(value)
@@ -271,7 +271,7 @@ console.log(interpret(progamStr))
 //   },
 // })
 // console.log(
-//   'formatters:',
+//   'shapes:',
 //   q.parse({
 //     date: Date.now(),
 //   }, `
