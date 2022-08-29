@@ -187,10 +187,10 @@ export class ScopedRequest {
 
           const paramValue = params[paramKey]
           const [fn, args] = after ? paramKey(after) : []
-          const value = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
+          const v = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
 
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
-          if (typeof value === 'undefined') {
+          if (typeof v === 'undefined') {
             if (end !== '?') {
               debug?.({
                 level: 'error',
@@ -204,7 +204,7 @@ export class ScopedRequest {
             return
           }
 
-          return `${key}=${value}`
+          return `${key}=${v}`
         }
 
         return `${key}=${value}`
