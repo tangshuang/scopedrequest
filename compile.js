@@ -122,7 +122,7 @@ function transferToTypescirpt(code, { shared, name }) {
           : value === 'number' ? 'number'
           : value === 'boolean' ? 'boolean'
           : 'any'
-      )
+      ) + ';'
     })
     paramsText += '}'
   }
