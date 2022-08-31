@@ -172,49 +172,58 @@ export class ScopedRequest {
 
       const pairs = search.split('&').map((item) => {
         const [key, value] = item.split('=')
-        if (!value) {
-          return `${key}=`
-        }
 
         if (/^\{[a-z][a-zA-Z0-9_]+[!?]?\}$/.test(value)) {
           const paramExp = value.substring(1, value.length - 1)
           const [before, after] = paramExp.split(':')
           const end = before[before.length - 1]
+          const required = end === '!' // when undefined, give it as empty
+          const optional = end === '?' // when undefined, drop the pair
+
           let paramKey = before
-          if (end === '!' || end === '?') {
+          if (required || optional) {
             paramKey = before.substring(0, before.length - 1)
           }
 
           const paramValue = params[paramKey]
           const [fn, args] = after ? paramKey(after) : []
-          const v = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
+          const content = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
 
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
-          if (typeof v === 'undefined') {
-            if (end !== '?') {
+          if (typeof content === 'undefined') {
+            // optional, drop the key
+            if (optional) {
+              return
+            }
+            // 强制给参数，即使为空
+            if (required) {
+              return `${key}=`
+            }
+            if (!optional) {
               debug?.({
                 level: 'error',
                 message: `${str} ${paramKey} 必须传入`,
               })
             }
-            // 强制给参数，即使为空
-            if (end === '!') {
-              return `${key}=`
-            }
-            return
           }
 
-          return `${key}=${v}`
+          return { key, value: content }
         }
 
-        return `${key}=${value}`
+        return { key, value }
       }).filter(Boolean)
+
 
       if (!pairs.length) {
         return path
       }
 
-      return path + '?' + pairs.join('&')
+      const searchParams = pairs.map(({ key, value }) => {
+        const output = this.options.onCreateParam ? this.options.onCreateParam(key, value, pairs) : `${key}=${value}`
+        return output
+      })
+
+      return path + '?' + searchParams.join('&')
     }
 
     const allFetchings = []

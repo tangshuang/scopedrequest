@@ -90,6 +90,9 @@ const request = new ScopedRequest({
   // 向内提供函数，建议函数名全部大写，例如 AVG() SUM()，仅传入scopex之后有效，不传入时，调用函数会报错
   fns: {},
 
+  // 生成url中的search参数时被执行
+  // 注意，如果参数提供了 ? ! 则会走内部逻辑，不会在此处被处理
+  onCreateParam(key, value, paris: Array<{ key: string, value: any }>): string,
   // 运行run得到数据后，通过onData对数据进行统一转换
   onData(data): data,
   // 运行mock之后，通过onMock进行统一转换
