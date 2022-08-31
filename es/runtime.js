@@ -197,7 +197,7 @@ export class ScopedRequest {
             }
             // 强制给参数，即使为空
             if (required) {
-              return `${key}=`
+              return { key, value: '' }
             }
             if (!optional) {
               debug?.({
