@@ -111,7 +111,9 @@ function transferToTypescirpt(code, { shared, name }) {
   if (paramsKeys.length) {
     paramsText += '{'
     paramsKeys.forEach((content) => {
-      const [key, value] = content.split(':')
+      const [name, value] = content.split(':')
+      const end = name[name.length - 1]
+      const key = end === '!' ? name.substring(0, name.length - 1) + '?' : name
       paramsText += key + ':' + (['string', 'number', 'boolean'].includes(value) ? value : 'any') + ';'
     })
     paramsText += '}'
