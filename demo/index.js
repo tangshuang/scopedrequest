@@ -243,6 +243,19 @@ async function debug() {
 `)
 }
 
+async function normal() {
+  const request = new ScopedRequest({
+    async fetch() {
+      return true;
+    },
+  })
+  await request.run(`
+    GET "xx" -> boolean(3)
+  `).then((res) => {
+    console.log(res)
+  })
+}
+
 window.basic = basic;
 window.post = post;
 window.httpHeaders = headers;
@@ -254,3 +267,4 @@ window.fragment = fragment;
 window.fns = fns;
 window.mock = mock;
 window.debug = debug;
+window.normal = normal;

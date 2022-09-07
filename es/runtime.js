@@ -1,5 +1,5 @@
 import { TYPES, interpret } from './compiler.js'
-import { isMatch, sleep, parseKey, parseValue } from './utils.js'
+import { isMatch, sleep, parseFn, tryParse } from './utils.js'
 
 const defaultMockers = {
   string: () => () => {
@@ -68,6 +68,12 @@ const defaultShapes = {
       receive: value,
       direction,
     })
+
+    // 支持字符串形式的false和0
+    if (value === 'false' || value === '0') {
+      return false
+    }
+
     return !!value
   },
 }
@@ -186,8 +192,8 @@ export class ScopedRequest {
           }
 
           const paramValue = params[paramKey]
-          const [fn, args] = after ? paramKey(after) : []
-          const content = fn ? this.format(paramValue, fn, ...args, { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
+          const [fn, args] = after ? parseFn(after) : []
+          const content = fn ? this.format(paramValue, fn, (args || []).map(tryParse), { ...context, keyPath: ['@' + paramKey] }) : params[paramKey]
 
           // 如果不存在该传入的params，就直接跳过该param，不在url中使用这个query
           if (typeof content === 'undefined') {
@@ -787,6 +793,12 @@ export class ScopedRequest {
           output[key] = value
         }
       })
+      return output
+    }
+
+    if (structure.type === TYPES.SYMBOL) {
+      const [name, params] = parseFn(structure.value);
+      const output = this.format(data, name, (params || []).map(tryParse), context)
       return output
     }
   }

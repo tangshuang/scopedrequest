@@ -7,6 +7,7 @@ export const TYPES  = {
   TUPLE: 'Tuple',
   PROP: 'Prop',
   ITEM: 'Item',
+  SYMBOL: 'Symbol',
 }
 
 // 开始对象/数组、元组
@@ -160,6 +161,10 @@ export function tokenize(code) {
     token += char
   }
 
+  if (token) {
+    commit()
+  }
+
   return program
 }
 
@@ -187,7 +192,6 @@ export function parseStructure(program, deepth = 0) {
       let exps = []
 
       const words = []
-
       while (token !== ';' && token !== '\n' && token !== ',' && i < tokens.length) {
         words.push(token)
         i ++
@@ -289,7 +293,7 @@ export function parse(tokens) {
 
   let command = null
 
-  const substr = (i) => tokens.substring(i - 10, i + 10)
+  const substr = (i) => tokens.slice(i - 10, i + 10).join()
 
   const mapping = {
     // 目前仅支持headers
@@ -326,6 +330,25 @@ export function parse(tokens) {
         // 跳过下一个
         i ++
       }
+      else if (typeof next === 'string') {
+        const symbol = next
+        const next2 = tokens[i + 2]
+        // 是一个函数
+        if (Array.isArray(next2) && next2[0] === '(') {
+          i ++
+          command.body = {
+            type: TYPES.SYMBOL,
+            value: `${symbol}${next2.join('')}`,
+          }
+        }
+        else {
+          command.body = {
+            type: TYPES.SYMBOL,
+            value: symbol,
+          }
+        }
+        i ++
+      }
       else {
         throw new Error(`${curr} at ${substr(i)} 必须给出结构体`)
       }
@@ -336,6 +359,25 @@ export function parse(tokens) {
         // 跳过下一个
         i ++
       }
+      else if (typeof next === 'string') {
+        const symbol = next
+        const next2 = tokens[i + 2]
+        // 是一个函数
+        if (Array.isArray(next2) && next2[0] === '(') {
+          i ++
+          command.res = {
+            type: TYPES.SYMBOL,
+            value: `${symbol}${next2.join('')}`,
+          }
+        }
+        else {
+          command.res = {
+            type: TYPES.SYMBOL,
+            value: symbol,
+          }
+        }
+        i ++
+      }
       else {
         throw new Error(`${curr} at ${substr(i)} 必须给出结构体`)
       }
@@ -344,6 +386,25 @@ export function parse(tokens) {
       if (Array.isArray(next)) {
         command.req = parseStructure(next)
         // 跳过下一个
+        i ++
+      }
+      else if (typeof next === 'string') {
+        const symbol = next
+        const next2 = tokens[i + 2]
+        // 是一个函数
+        if (Array.isArray(next2) && next2[0] === '(') {
+          i ++
+          command.req = {
+            type: TYPES.SYMBOL,
+            value: `${symbol}${next2.join('')}`,
+          }
+        }
+        else {
+          command.req = {
+            type: TYPES.SYMBOL,
+            value: symbol,
+          }
+        }
         i ++
       }
       else {

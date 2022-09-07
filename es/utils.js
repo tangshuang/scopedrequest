@@ -21,6 +21,18 @@ export function getStringHash(str) {
   return hash >>> 0
 }
 
+export function parseFn(str) {
+  const matched = str.match(/([a-zA-Z0-9_]+)(\((.*?)\))?/);
+  const [, name, , _params] = matched;
+  const params = typeof _params === 'string'
+    ? _params
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => !!item)
+    : null;
+  return [name, params];
+}
+
 export function parseKey(str) {
   let name = ''
   let decorators = ''
@@ -53,4 +65,16 @@ export function parseValue(str) {
   }
 
   return [operators, content]
+}
+
+export function tryParse(str) {
+  if (typeof str === 'string') {
+    try {
+      return JSON.parse(str)
+    }
+    catch (e) {
+      return str
+    }
+  }
+  return str
 }
