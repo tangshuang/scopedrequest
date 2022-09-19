@@ -131,7 +131,7 @@ function transferToTypescirpt(code, { shared, name }) {
         text += frag
       }
       else if (!exps.length) {
-        text += tag
+        text += ['string', 'number', 'boolean'].includes(tag) ? tag : 'any'
       }
       // 暂不支持表达式
       else {
