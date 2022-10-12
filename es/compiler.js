@@ -523,7 +523,5 @@ export function interpret(code) {
     }
   })
 
-  console.log(fragments)
-
   return { groups, fragments, commands, ast }
 }
