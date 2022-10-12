@@ -150,7 +150,7 @@ async function decorate() {
 // 片段
 async function fragment() {
   const data = await ScopedRequest.run(`
-    FRAGMENT libraryInfo: {
+    DEFINE libraryInfo: {
       full_name
       url
     }

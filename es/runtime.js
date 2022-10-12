@@ -97,7 +97,7 @@ export class ScopedRequest {
         return
       }
 
-      if (isMatch(item.command, 'fragment')) {
+      if (isMatch(item.command, 'fragment') || isMatch(item.command, 'define')) {
         fragments[item.args[0]] = item.body
       }
       else if (isMatch(item.command, 'await')) {

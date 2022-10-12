@@ -246,7 +246,7 @@ ScopedRequest.mock(`
 在生成文档/代码时，它实际上会产生多份。
 
 \```
-FRAGMENT SOME_DATA: {
+DEFINE SomeData: {
   name
   age
 }

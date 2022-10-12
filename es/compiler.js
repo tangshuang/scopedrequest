@@ -506,7 +506,7 @@ export function interpret(code) {
       return
     }
 
-    if (isMatch(item.command, 'fragment')) {
+    if (isMatch(item.command, 'fragment') || isMatch(item.command, 'define')) {
       fragments[item.args[0]] = item.body
     }
     else if (isMatch(item.command, 'await')) {
@@ -522,6 +522,8 @@ export function interpret(code) {
       groups[groupIndex].push(item)
     }
   })
+
+  console.log(fragments)
 
   return { groups, fragments, commands, ast }
 }
