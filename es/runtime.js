@@ -1203,6 +1203,176 @@ export class ScopedRequest {
     return final
   }
 
+  apply(code) {
+    const { fragments, groups } = interpret(code)
+    const { shapes, debug } = this.options
+
+    const results = {}
+
+    const allShapes = {
+      ...defaultShapes,
+      ...shapes,
+    }
+    const breakFragment = (keyPath) => {
+      if (keyPath.length > 10) {
+        debug?.({
+          message: `70014: 深度大于10 ${keyPath.join('.')} 被强制阻断`,
+          level: 'warn',
+        })
+        return true
+      }
+    }
+    const fn = (structure, context = {}) => {
+      const { keyPath = [] } = context
+
+      /**
+       * 模拟对象
+       */
+      if (structure.type === TYPES.OBJECT) {
+        const output = {}
+        structure.nodes.forEach((prop) => {
+          const { key: keyInfo, value: valueInfo } = prop
+          const [key, decorators] = keyInfo || []
+
+          const isOptional = decorators?.indexOf('?') > -1
+          if (isOptional) {
+            return
+          }
+
+          const currContext = {
+            ...context,
+            keyPath: [...keyPath, key],
+            debug,
+          }
+
+          // 没有给值
+          if (!valueInfo) {
+            output[key] = allShapes.string()()
+          }
+          else if (Array.isArray(valueInfo)) {
+            const [operators, tag, exps = []] = valueInfo
+            if (tag && operators === '&') {
+              const fragment = fragments[tag]
+              if (!fragment) {
+                throw new Error(`70010: ${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
+              }
+
+              if (breakFragment(keyPath)) {
+                return
+              }
+
+              const out = fn(fragment, currContext)
+              output[key] = out
+            }
+            else if (tag && operators === '=') {
+              output[key] = results[tag]
+            }
+            else if (tag) {
+              const create = allShapes[tag]
+              if (!create) {
+                throw new Error(`70011: ${code} 中 ${keyPath.join('.')}.${key} 不存在${tag}这个Shape`)
+              }
+              output[key] = create(...exps.map(exp => this.parse(exp, results))).call(currContext)
+            }
+            else {
+              throw new Error(`70012: ${keyPath.join('.')}.${key} 无法被创建，因为没有找到合适的Shape`)
+            }
+          }
+          else if (valueInfo && typeof valueInfo === 'object') {
+            const out = fn(valueInfo, currContext)
+            output[key] = out
+          }
+        })
+        return output
+      }
+
+      /**
+       * 模拟数组
+       */
+      if (structure.type === TYPES.ARRAY) {
+        return []
+      }
+
+      /**
+       * 模拟元组
+       */
+      if (structure.type === TYPES.TUPLE) {
+        const output = []
+        const { nodes } = structure
+
+        nodes.forEach((item, index) => {
+          const { key: keyInfo, value: valueInfo } = item
+          const [key, decorators] = keyInfo || []
+
+          if (decorators?.indexOf('?') > -1) {
+            return
+          }
+
+          const currContext = {
+            ...context,
+            keyPath: [...keyPath, key],
+            debug,
+          }
+
+          if (Array.isArray(valueInfo)) {
+            const [operators, tag, exps = []] = valueInfo || []
+            if (tag && operators === '&') {
+              const fragment = fragments[tag]
+              if (!fragment) {
+                throw new Error(`70013: ${tag} Fragment at ${keyPath.join('.')}.${key} 不存在，请检查`)
+              }
+
+              if (breakFragment(keyPath)) {
+                return
+              }
+
+              const out = fn(fragment, currContext)
+              output[index] = out
+            }
+            else if (tag) {
+              const mockfn = allShapes[tag]
+              if (!mockfn) {
+                throw new Error(`70014: ${code} 中 ${keyPath.join('.')}.${key} 不存在${tag}这个Shape`)
+              }
+              const out = mockfn(...exps.map(exp => this.parse(exp, results))).call(currContext)
+              output[index] = out
+            }
+            else {
+              throw new Error(`70015: ${keyPath.join('.')}.${key} 无法被创建，因为没有找到合适的Shape`)
+            }
+          }
+          else if (valueInfo && typeof valueInfo === 'object') {
+            const out = fn(valueInfo, currContext)
+            output[index] = out
+          }
+        })
+        return output
+      }
+    }
+
+    let final = null
+    groups.forEach((group, i) => {
+      group.forEach((item, n) => {
+        const isFinal = i === groups.length - 1 && n === group.length - 1
+        const { alias, res } = item
+
+        if (!res) {
+          return
+        }
+        const data = fn(res)
+        if (alias) {
+          results[alias] = data
+        }
+
+        if (isFinal) {
+          final = data
+        }
+      })
+    })
+
+    return final
+  }
+
   static run(code, params, dataList, context) {
     const ins = new this()
     return ins.run(code, params, dataList, context)
@@ -1211,5 +1381,10 @@ export class ScopedRequest {
   static mock(code) {
     const ins = new this()
     return ins.mock(code)
+  }
+
+  static apply(code) {
+    const ins = new this()
+    return ins.apply(code)
   }
 }

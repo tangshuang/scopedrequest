@@ -268,3 +268,20 @@ window.fns = fns;
 window.mock = mock;
 window.debug = debug;
 window.normal = normal;
+
+function apply() {
+  const data = ScopedRequest.apply(`
+    DEFINE User: {
+      id: string
+      name: string
+    }
+
+    GET "" -> {
+      user: &User
+      time: number
+    }
+  `)
+  console.log(data)
+}
+
+window.apply = apply
