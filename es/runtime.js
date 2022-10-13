@@ -15,8 +15,8 @@ const defaultMockers = {
 }
 
 const defaultShapes = {
-  string: () => function(value, keyPath) {
-    const { debug, target, command, direction } = this
+  string: () => function(value) {
+    const { debug, target, command, direction, keyPath } = this
 
     if (typeof value === 'string') {
       return value
@@ -32,8 +32,8 @@ const defaultShapes = {
     })
     return value === null || value === undefined ? '' : '' + value
   },
-  number: (defaultValue) => function(value, keyPath) {
-    const { debug, target, command, direction } = this
+  number: (defaultValue) => function(value) {
+    const { debug, target, command, direction, keyPath } = this
 
     if (typeof value === 'number' && !Number.isNaN(value)) {
       return value
@@ -53,8 +53,8 @@ const defaultShapes = {
     })
     return +defaultValue || 0
   },
-  boolean: () => function(value, keyPath) {
-    const { debug, target, command, direction } = this
+  boolean: () => function(value) {
+    const { debug, target, command, direction, keyPath } = this
 
     if (typeof value === 'boolean') {
       return value
@@ -1005,9 +1005,9 @@ export class ScopedRequest {
           }
 
           const currContext = {
+            debug,
             ...context,
             keyPath: [...keyPath, key],
-            debug,
           }
 
           // 没有给值
@@ -1135,9 +1135,9 @@ export class ScopedRequest {
           }
 
           const currContext = {
+            debug,
             ...context,
             keyPath: [...keyPath, key],
-            debug,
           }
 
           if (Array.isArray(valueInfo)) {
@@ -1180,12 +1180,15 @@ export class ScopedRequest {
     groups.forEach((group, i) => {
       group.forEach((item, n) => {
         const isFinal = i === groups.length - 1 && n === group.length - 1
-        const { alias, res } = item
+        const { alias, res, args, command } = item
 
         if (!res) {
           return
         }
-        const data = fn(res)
+
+        const target = isMatch(command, 'get') ? args[0] : ''
+        const data = fn(res, { command: '[mock]', target, debug: false })
+
         if (alias) {
           results[alias] = data
         }
@@ -1240,9 +1243,9 @@ export class ScopedRequest {
           }
 
           const currContext = {
+            debug,
             ...context,
             keyPath: [...keyPath, key],
-            debug,
           }
 
           // 没有给值
@@ -1309,9 +1312,9 @@ export class ScopedRequest {
           }
 
           const currContext = {
+            debug,
             ...context,
             keyPath: [...keyPath, key],
-            debug,
           }
 
           if (Array.isArray(valueInfo)) {
@@ -1354,12 +1357,15 @@ export class ScopedRequest {
     groups.forEach((group, i) => {
       group.forEach((item, n) => {
         const isFinal = i === groups.length - 1 && n === group.length - 1
-        const { alias, res } = item
+        const { alias, res, args, command } = item
 
         if (!res) {
           return
         }
-        const data = fn(res)
+
+        const target = isMatch(command, 'get') ? args[0] : ''
+        const data = fn(res, { command: '[apply]', target, debug: false })
+
         if (alias) {
           results[alias] = data
         }
