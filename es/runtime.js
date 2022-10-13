@@ -1187,7 +1187,7 @@ export class ScopedRequest {
         }
 
         const target = isMatch(command, 'get') ? args[0] : ''
-        const data = fn(res, { command: '[mock]', target, debug: false })
+        const data = fn(res, { command: '[mock]', target, debug: null })
 
         if (alias) {
           results[alias] = data
@@ -1364,7 +1364,7 @@ export class ScopedRequest {
         }
 
         const target = isMatch(command, 'get') ? args[0] : ''
-        const data = fn(res, { command: '[apply]', target, debug: false })
+        const data = fn(res, { command: '[apply]', target, debug: null })
 
         if (alias) {
           results[alias] = data
