@@ -244,7 +244,8 @@ export class ScopedRequest {
 
       const { headers = {} } = options
 
-      const realUrl = replaceUrl(url)
+      const replacedUrl = replaceUrl(url)
+      const realUrl = this.options.onCreateUrl ? this.options.onCreateUrl(replacedUrl, { params, url }) : replacedUrl
       const realHeaders = Object.keys(headers).reduce((obj, key) => {
         obj[key] = replaceBy(headers[key], true)
         return obj
@@ -274,7 +275,9 @@ export class ScopedRequest {
         )
       }
 
-      const data = await this.fetch(realUrl, { method: command, headers: realHeaders }, realData, context)
+      const finalPostData = this.options.onRequestData ? this.options.onRequestData(realData) : realData
+
+      const data = await this.fetch(realUrl, { method: command, headers: realHeaders }, finalPostData, context)
 
       let output = null
       if (res) {
@@ -422,8 +425,8 @@ export class ScopedRequest {
       }
       through()
     }).then((data) => {
-      if (this.options.onData) {
-        return this.options.onData(data, { code, params, context, requests: allFetchings })
+      if (this.options.onResponseData) {
+        return this.options.onResponseData(data, { code, params, context, requests: allFetchings })
       }
       return data
     })
@@ -642,11 +645,11 @@ export class ScopedRequest {
         }
       })
 
-      if (this.options.keepProperty) {
+      if (this.options.shouldKeepProperty) {
         const keys = Object.keys(data)
         keys.forEach((key) => {
           const value = data[key]
-          if (this.options.keepProperty(key, value, data)) {
+          if (this.options.shouldKeepProperty(key, value, data)) {
             output[key] = value
           }
         })
