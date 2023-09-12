@@ -5,6 +5,10 @@
   "main": "index.js",
   "module": "es/index.js",
   "source": "es/index.js",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "engines": {
+    "node": ">= 10"
+  },
   "scripts": {
     "dev": "parcel --no-cache --no-hmr demo/index.html",
     "build": "parcel build"
@@ -17,7 +21,9 @@
   "author": "",
   "license": "AGPL",
   "devDependencies": {
-    "parcel": "^2.0.1",
+    "parcel": "^2.0.1"
+  },
+  "optionalDependencies": {
     "scopex": "^4.3.3"
   },
   "targets": {
