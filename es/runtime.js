@@ -1,5 +1,5 @@
 import { TYPES, interpret } from './compiler.js'
-import { isMatch, sleep, parseFn, tryParse } from './utils.js'
+import { isMatch, sleep, parseFn, tryParse, parseKeyPath } from './utils.js'
 
 const defaultMockers = {
   string: () => () => {
@@ -807,11 +807,55 @@ export class ScopedRequest {
   }
 
   choose(items, value, index, fragments) {
+    const compares = {
+      '=': (a, b) => {
+        return a === b
+      },
+      '>=': (a, b) => {
+        return a >= b
+      },
+      '<=': (a, b) => {
+        return a <= b
+      },
+      '<': (a, b) => {
+        return a < b
+      },
+      '>': (a, b) => {
+        return a > b
+      },
+    };
+    const compareBy = (exp) => {
+      if (value === null || typeof value !== 'object') {
+        return false
+      }
+      const { key, value: vstr } = exp;
+      const compareFn = compares[exp.compare];
+      const wantValue = tryParse(vstr);
+      const realValue = parseKeyPath(value, key)
+      return compareFn(realValue, wantValue)
+    };
     // 如果给的数组中，存在 `2: string` 这种，直接把这个作为当前 index 元素的类型，而不是去进行匹配
     const indexMatchedNode = items.find((node) => {
       const { key: keyInfo } = node
-      const [name] = keyInfo || []
+      const [name, filter] = keyInfo || []
       if (typeof name !== 'undefined' && +name === +index) {
+        return true
+      }
+      if (/^['"].*?['"]$/.test(filter)) {
+        const expstr = filter.substring(1, filter.length - 1);
+        const exps = expstr.split('&').map((item) => {
+          const [, key, compare, value] = item.match(/^(.*?)(>=|<=)(.*?)$/);
+          if (!key || !compares[compare]) {
+            return;
+          }
+          return { key, compare, value }
+        }).filter(Boolean)
+        for (let i = 0, len = exps.length; i < len; i ++) {
+          const exp = exps[i]
+          if (!compareBy(exp)) {
+            return false
+          }
+        }
         return true
       }
       return false
@@ -822,15 +866,22 @@ export class ScopedRequest {
 
     const { debug } = this.options
 
-    const nodes = items.filter((item) => {
+    const filtered = items.filter((item) => {
       const { key: keyInfo } = item
-      const [name] = keyInfo || []
+      const [name, filter] = keyInfo || []
       // 过滤掉有具体索引号的
-      if (typeof name !== 'undefined') {
+      if (typeof name !== 'undefined' || /^['"].*?['"]$/.test(filter)) {
         return false
       }
       return true
-    }).map((item) => {
+    })
+
+    // if there is no normal items rules, the list item will be droped
+    if (!filtered.length) {
+      return
+    }
+
+    const nodes = filtered.map((item) => {
       // 展开fragment来进行比较
       if (Array.isArray(item.value) && typeof item.value[0] === 'string' && item.value[0] === '&') {
         const [, frag] = item.value

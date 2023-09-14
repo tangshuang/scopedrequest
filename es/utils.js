@@ -38,7 +38,7 @@ export function parseKey(str) {
   let decorators = ''
   for (let i = 0; i < str.length; i ++) {
     const char = str[i]
-    if (/^\w$/.test(char)) {
+    if (/^\w$|\./.test(char)) {
       name += char
     }
     else {
@@ -52,7 +52,7 @@ export function parseKey(str) {
 
 export function parseValue(str) {
   let operators = ''
-  let content = str
+  let content = ''
   for (let i = 0; i < str.length; i ++) {
     const char = str[i]
     if (['&'].includes(char)) {
@@ -77,4 +77,20 @@ export function tryParse(str) {
     }
   }
   return str
+}
+
+export function parseKeyPath(obj, keyPath) {
+  const chain = keyPath.split('.')
+  let curr = obj
+  for (let i = 0, len = chain.length; i < len; i ++) {
+    const at = chain[i]
+    curr = curr[at]
+    if (typeof curr === 'undefined') {
+      return
+    }
+    if (curr === null) {
+      return null
+    }
+  }
+  return curr
 }

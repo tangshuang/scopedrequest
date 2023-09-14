@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+
+<script type="module">
+  import { interpret } from '../es/compiler.js';
+
+  const code = `GET "xxxx" -> {
+    items: [1:{}]
+    dog.name
+  };`;
+
+  const { ast } = interpret(code);
+  console.log(ast);
+</script>
