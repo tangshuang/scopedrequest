@@ -497,18 +497,6 @@ export class ScopedRequest {
     const { key: keyInfo, value: valueInfo } = node
     const [name, decorators] = keyInfo || []
 
-    if (typeof index !== 'undefined' && typeof name !== 'undefined' && +name !== +index) {
-      debug?.({
-        command,
-        url: target,
-        keyPath,
-        alias,
-        message: `结构体中的${keyPath.join('.')}.${name}与传入的 ${index} 不匹配，请检查`,
-        level: 'debug',
-        direction,
-      })
-    }
-
     const key = name || index
     // 对应的后端字段名
     const [, field = key] = decorators?.match(/~(\w+)/) || []
@@ -516,6 +504,38 @@ export class ScopedRequest {
 
     const output = {
       key,
+    }
+
+    if (node.type === TYPES.ITEM) {
+      if (typeof index === 'undefined') {
+        debug?.({
+          command,
+          url: target,
+          keyPath,
+          alias,
+          message: `结构体中的${keyPath.join('.')}没有传入index，请检查`,
+          level: 'error',
+          direction,
+        })
+      }
+
+      const isFilterRule = /^['"].*?['"]$/.test(decorators || '')
+      if (typeof index !== 'undefined' && typeof name !== 'undefined' && +name !== +index && !isFilterRule) {
+        debug?.({
+          command,
+          url: target,
+          keyPath,
+          alias,
+          message: `结构体中的${keyPath.join('.')}.${name}与传入的 ${index} 不匹配，请检查`,
+          level: 'debug',
+          direction,
+        })
+      }
+
+      // 没有具体的key，就使用push
+      if (isFilterRule) {
+        output.key = undefined
+      }
     }
 
     // 允许为null或undefined，如果这两种情况，将被设定为null
@@ -724,7 +744,12 @@ export class ScopedRequest {
         const gened = this.create(node, data, { fragments, results, context, index })
         if (gened) {
           const { key, value } = gened
-          output[key] = value
+          if (typeof key === 'undefined') {
+            output.push(value)
+          }
+          else {
+            output[key] = value
+          }
         }
       })
 
