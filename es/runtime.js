@@ -863,9 +863,7 @@ export class ScopedRequest {
     const indexMatchedNode = items.find((node) => {
       const { key: keyInfo } = node
       const [name, filter] = keyInfo || []
-      if (typeof name !== 'undefined' && +name === +index) {
-        return true
-      }
+
       if (/^['"].*?['"]$/.test(filter)) {
         const expstr = filter.substring(1, filter.length - 1);
         const exps = expstr.split('&').map((item) => {
@@ -883,8 +881,14 @@ export class ScopedRequest {
         }
         return true
       }
+
+      if (typeof name !== 'undefined' && +name === +index) {
+        return true
+      }
+
       return false
     })
+
     if (indexMatchedNode) {
       return indexMatchedNode
     }
