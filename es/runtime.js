@@ -844,7 +844,7 @@ export class ScopedRequest {
       if (/^['"].*?['"]$/.test(filter)) {
         const expstr = filter.substring(1, filter.length - 1);
         const exps = expstr.split('&').map((item) => {
-          const [, key, compare, value] = item.match(/^(.*?)(>=|<=)(.*?)$/);
+          const [, key, compare, value] = item.match(/^(.*?)(>=|<=|=|>|<)(.*?)$/);
           if (!key || !compares[compare]) {
             return;
           }
