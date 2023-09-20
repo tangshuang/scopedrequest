@@ -656,6 +656,10 @@ export class ScopedRequest {
         data = {}
       }
 
+      if (!structure.nodes.length) {
+        return data;
+      }
+
       const output = {}
       structure.nodes.forEach((node) => {
         const gened = this.create(node, data, { fragments, results, context })
